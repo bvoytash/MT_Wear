@@ -4,29 +4,24 @@ from fastapi import Form
 
 
 class CreateUserRequest(BaseModel):
-    username: str = Field(min_length=1, max_length=50)
-    password: str = Field(min_length=1, max_length=50)
     email: str = Field(min_length=1, max_length=50)
+    password: str = Field(min_length=1, max_length=50)
 
     model_config = {
         "json_schema_extra": {
-            "example": {
-                "username": "client_username",
-                "password": "client_pass1234",
-                "email": "abv@abv.bg",
-            }
+            "example": {"email": "abv@abv.bg", "password": "client_pass1234"}
         }
     }
 
 
 class DeleteUserRequest(BaseModel):
-    username: str = Field(min_length=1, max_length=50)
+    email: str = Field(min_length=1, max_length=50)
     password: str = Field(min_length=1, max_length=50)
 
     model_config = {
         "json_schema_extra": {
             "example": {
-                "username": "client_username",
+                "email": "abv@abv.bg",
                 "password": "client_pass1234",
             }
         }

@@ -1,11 +1,16 @@
 import uvicorn
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles  # to delete
 from routes import users
 from database import Base, engine
 
+# Don't forget to import the models
+from models.users import User
+
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")  # to delete
 Base.metadata.create_all(bind=engine)
 app.include_router(users.router)
 
@@ -16,4 +21,6 @@ async def health_check():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, workers=4)
+    uvicorn.run(
+        "main:app", host="0.0.0.0", port=8000, workers=4, reload=True
+    )  # remove reload when finished with testing
