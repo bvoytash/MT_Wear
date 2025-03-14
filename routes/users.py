@@ -4,6 +4,7 @@ from database import db_dependency
 from security import check_password, hash_password
 from models.users import User
 from validators.users import create_user_dependency, delete_user_dependency
+from routes.auth import auth_user_dependency
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -23,14 +24,14 @@ async def add_user(db: db_dependency, create_user_request: create_user_dependenc
 
 
 @router.delete("/delete", status_code=status.HTTP_200_OK)
-async def delete_user(db: db_dependency, delete_user_request: delete_user_dependency):
-    user = db.query(User).filter_by(email=delete_user_request.email).first()
+async def delete_user(user: auth_user_dependency, db: db_dependency):
     if user:
-        check_password(delete_user_request.password, user.password)
         db.delete(user)
         db.commit()
         return JSONResponse(
             content={"detail": "User deleted successfully"}, status_code=200
         )
     else:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user"
+        )

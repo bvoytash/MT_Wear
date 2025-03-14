@@ -6,6 +6,8 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from pydantic import BaseModel
 from ..models.users import User
+from security import check_password
+from database import db_dependency
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -30,7 +32,7 @@ def create_access_token(email: str, expires_delta: timedelta):
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def get_current_user(token: token_dependency):
+async def get_current_user(token: token_dependency, db: db_dependency):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
@@ -39,10 +41,11 @@ async def get_current_user(token: token_dependency):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate user.",
             )
-        return {"email": email}
+        user = db.query(User).filter(User.email == email).first()
+        return user
     except JWTError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user."
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user"
         )
 
 
@@ -50,7 +53,12 @@ async def get_current_user(token: token_dependency):
 async def login_for_access_token(form_data: oauth_dependency, db: db_dependency):
     user = db.query(User).filter(User.email == form_data.email).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user"
+        )
     check_password(form_data.password, user.password)
     token = create_access_token(user.email, timedelta(minutes=15))
     return {"access_token": token, "token_type": "bearer"}
+
+
+auth_user_dependency = Annotated[dict, Depends(get_current_user)]
