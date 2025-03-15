@@ -1,38 +1,42 @@
 For manual testing:
 http://localhost:8000/static/manual_test.html
 
-To setup the database you need an .env file with this variable:
+To setup the database you need an .env file with this variables:
 SQLALCHEMY_DATABASE_URL
+SECRET_KEY
+ALGORITHM
 
 Example:
 SQLALCHEMY_DATABASE_URL=sqlite:///local.db
+SECRET_KEY="e104cc05b88ec7ce74aae28e32"
+ALGORITHM="HS256"
 
 
 
 
+#### delete
+fetch('http://localhost:8000/users/delete', {
+  method: 'DELETE',
+  credentials: 'include'
+})
+.then(response => console.log(response))
+.catch(error => console.error('Error:', error));
 
+#### login
+fetch('http://localhost:8000/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  },
+  body: 'email=a@abv.bg&password=22'
+})
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
 
-curl -X DELETE \
-  http://localhost:8000/users/delete-page \
-  -H 'Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhQGFidi5iZyIsImV4cCI6MTc0MjAwMTI3M30.Ag3vQJnvfui50nLHOHUEKf6EmZZ43jFSVTPFWVVPbCQ'
+#### logout
+fetch('http://localhost:8000/logout', {
+  method: 'POST',
+})
+.then(response => console.log(response))
+.catch(error => console.error('Error:', error));
 
-
-curl -X DELETE \
-  http://localhost:8000/users/delete \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhQGFidi5iZyIsImV4cCI6MTc0MjAwMTI3M30.Ag3vQJnvfui50nLHOHUEKf6EmZZ43jFSVTPFWVVPbCQ'
-
-
-
-curl -X POST \
-  http://localhost:8000/auth/token \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  -d 'grant_type=password&username=a@abv.bg&password=22'
-
-
-
-curl -X POST \
-  http://localhost:8000/auth/logout \
-  -H 'Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhQGFidi5iZyIsImV4cCI6MTc0MjAwMTI3M30.Ag3vQJnvfui50nLHOHUEKf6EmZZ43jFSVTPFWVVPbCQ'
-
-
-decide approach

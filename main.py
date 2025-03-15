@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles  # to delete
+from fastapi.middleware.cors import CORSMiddleware
 from routes import users, auth
 from database import Base, engine
 
@@ -14,6 +15,19 @@ app.mount("/static", StaticFiles(directory="static"), name="static")  # to delet
 Base.metadata.create_all(bind=engine)
 app.include_router(users.router)
 app.include_router(auth.router)
+
+origins = [
+    "http://frontendurl.uk",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/", status_code=status.HTTP_200_OK)

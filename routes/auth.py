@@ -1,29 +1,18 @@
 import os
 from datetime import timedelta, datetime, timezone
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, status, Cookie
+from fastapi.responses import JSONResponse, Response
 from jose import jwt, JWTError
-from pydantic import BaseModel
 from models.users import User
 from security import check_password
 from database import db_dependency
+from validators.auth import login_dependency
 
 router = APIRouter()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl="login")
-
-token_dependency = Annotated[str, Depends(oauth2_bearer)]
-oauth_dependency = Annotated[OAuth2PasswordRequestForm, Depends()]
-
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
 
 
 def create_access_token(email: str, expires_delta: timedelta):
@@ -33,9 +22,14 @@ def create_access_token(email: str, expires_delta: timedelta):
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def get_current_user(token: token_dependency):
+async def get_current_user_email(access_token: str = Cookie(None)):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if access_token is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate user.",
+            )
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
             raise HTTPException(
@@ -49,26 +43,34 @@ async def get_current_user(token: token_dependency):
         )
 
 
-# for endpoint usage
-auth_user_dependency = Annotated[str, Depends(get_current_user)]
+auth_email_dependency = Annotated[str, Depends(get_current_user_email)]
 
 
-@router.post("/login", response_model=Token)
-async def login_for_access_token(form_data: oauth_dependency, db: db_dependency):
-    user = db.query(User).filter(User.email == form_data.username).first()
+@router.post("/login")
+async def login_for_access_token(form_data: login_dependency, db: db_dependency):
+    user = db.query(User).filter(User.email == form_data.email).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user"
         )
     check_password(form_data.password, user.password)
     token = create_access_token(user.email, timedelta(minutes=15))
-    return JSONResponse(
-        content={"access_token": token, "token_type": "bearer"}, status_code=200
+    response = Response(content="Logged in successfully", media_type="text/plain")
+    response.set_cookie(
+        "access_token",
+        token,
+        max_age=3600,
+        domain=None,
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="None",
     )
+    return response
 
 
 @router.post("/logout")
-async def logout():
+async def logout(email: auth_email_dependency):
     response = JSONResponse(
         content={"detail": "Logged out successfully"}, status_code=200
     )
