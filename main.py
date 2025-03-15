@@ -1,13 +1,15 @@
 import uvicorn
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from routes import users
+from routes import users, products, category
 from database import Base, engine
 
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
-app.include_router(users.router)
+# app.include_router(users.router)
+app.include_router(products.router)
+app.include_router(category.router)
 
 
 @app.get("/", status_code=status.HTTP_200_OK)
