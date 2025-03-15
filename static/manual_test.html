@@ -2,9 +2,9 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test User Creation and Deletion</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test User Creation, Login, Deletion & Logout</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,6 +12,7 @@
 
         .form-container {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-around;
             align-items: flex-start;
         }
@@ -68,42 +69,60 @@
 </head>
 
 <body>
-
     <div class="form-container">
+        <!-- Create User Form -->
         <div class="form-group">
             <form id="userForm">
                 <h2>Create User</h2>
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" required />
 
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required />
 
                 <button type="submit">Create User</button>
             </form>
             <div class="result" id="result"></div>
         </div>
 
+        <!-- Login Form -->
+        <div class="form-group">
+            <form id="loginForm">
+                <h2>Login</h2>
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" name="email" required />
+
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" name="password" required />
+
+                <button type="submit">Login</button>
+            </form>
+            <div class="result" id="loginResult"></div>
+        </div>
+
+        <!-- Delete User Form (only one button) -->
         <div class="form-group">
             <form id="deleteForm">
                 <h2>Delete User</h2>
-                <label for="deleteEmail">Email:</label>
-                <input type="email" id="deleteEmail" name="email" required>
-
-                <label for="deletePassword">Password:</label>
-                <input type="password" id="deletePassword" name="password" required>
-
                 <button type="submit">Delete User</button>
             </form>
             <div class="result" id="deleteResult"></div>
         </div>
+
+        <!-- Logout Form -->
+        <div class="form-group">
+            <form id="logoutForm">
+                <h2>Logout</h2>
+                <button type="submit">Logout</button>
+            </form>
+            <div class="result" id="logoutResult"></div>
+        </div>
     </div>
 
     <script>
+        // Create User
         const userForm = document.getElementById('userForm');
         const resultDiv = document.getElementById('result');
-        const deleteForm = document.getElementById('deleteForm');
-        const deleteResultDiv = document.getElementById('deleteResult');
 
         userForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -112,7 +131,8 @@
             try {
                 const response = await fetch('/users/create', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'include'
                 });
 
                 if (response.ok) {
@@ -134,14 +154,50 @@
             }
         });
 
+        // Login
+        const loginForm = document.getElementById('loginForm');
+        const loginResultDiv = document.getElementById('loginResult');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(loginForm);
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    loginResultDiv.innerText = `Success: ${data.detail}`;
+                    loginResultDiv.style.backgroundColor = 'lightgreen';
+                    loginResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    loginResultDiv.innerText = `Error: ${errorData.detail}`;
+                    loginResultDiv.style.backgroundColor = 'lightcoral';
+                    loginResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                loginResultDiv.innerText = 'An error occurred';
+                loginResultDiv.style.backgroundColor = 'lightcoral';
+                loginResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Delete User
+        const deleteForm = document.getElementById('deleteForm');
+        const deleteResultDiv = document.getElementById('deleteResult');
+
         deleteForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const deleteFormData = new FormData(deleteForm);
-
             try {
                 const response = await fetch('/users/delete', {
                     method: 'DELETE',
-                    body: deleteFormData
+                    credentials: 'include'
                 });
 
                 if (response.ok) {
@@ -162,8 +218,38 @@
                 deleteResultDiv.style.visibility = 'visible';
             }
         });
-    </script>
 
+        // Logout
+        const logoutForm = document.getElementById('logoutForm');
+        const logoutResultDiv = document.getElementById('logoutResult');
+
+        logoutForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    logoutResultDiv.innerText = `Success: ${data.detail}`;
+                    logoutResultDiv.style.backgroundColor = 'lightgreen';
+                    logoutResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    logoutResultDiv.innerText = `Error: ${errorData.detail}`;
+                    logoutResultDiv.style.backgroundColor = 'lightcoral';
+                    logoutResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                logoutResultDiv.innerText = 'An error occurred';
+                logoutResultDiv.style.backgroundColor = 'lightcoral';
+                logoutResultDiv.style.visibility = 'visible';
+            }
+        });
+    </script>
 </body>
 
 </html>

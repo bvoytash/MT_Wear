@@ -18,7 +18,7 @@ app.include_router(auth.router)
 
 origins = [
     "http://frontendurl.uk",
-    "http://localhost:8080",
+    "http://localhost:8000",
 ]
 
 app.add_middleware(

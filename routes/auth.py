@@ -2,7 +2,7 @@ import os
 from datetime import timedelta, datetime, timezone
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, Cookie
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
 from models.users import User
 from security import check_password
@@ -47,7 +47,13 @@ auth_email_dependency = Annotated[str, Depends(get_current_user_email)]
 
 
 @router.post("/login")
-async def login_for_access_token(form_data: login_dependency, db: db_dependency):
+async def login_for_access_token(
+    form_data: login_dependency, db: db_dependency, access_token: str = Cookie(None)
+):
+    if access_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Already logged in"
+        )
     user = db.query(User).filter(User.email == form_data.email).first()
     if not user:
         raise HTTPException(
@@ -55,7 +61,7 @@ async def login_for_access_token(form_data: login_dependency, db: db_dependency)
         )
     check_password(form_data.password, user.password)
     token = create_access_token(user.email, timedelta(minutes=15))
-    response = Response(content="Logged in successfully", media_type="text/plain")
+    response = JSONResponse(content={"detail": "Logged in successfully"})
     response.set_cookie(
         "access_token",
         token,
