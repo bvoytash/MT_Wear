@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles  # to delete
-from routes import users
+from routes import users, auth
 from database import Base, engine
 
 # Don't forget to import the models
@@ -13,6 +13,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")  # to delete
 Base.metadata.create_all(bind=engine)
 app.include_router(users.router)
+app.include_router(auth.router)
 
 
 @app.get("/", status_code=status.HTTP_200_OK)
