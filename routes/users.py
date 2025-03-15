@@ -11,6 +11,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: create_user_dependency):
+    print(f"{create_user_request.email}  {create_user_request.password}")
     existing_user = db.query(User).filter_by(email=create_user_request.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")

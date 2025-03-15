@@ -40,3 +40,13 @@ fetch('http://localhost:8000/logout', {
 .then(response => console.log(response))
 .catch(error => console.error('Error:', error));
 
+#### create
+fetch('http://localhost:8000/users/create', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  },
+  body: 'email=a@abv.bg&password=22'
+})
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
