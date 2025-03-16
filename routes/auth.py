@@ -43,13 +43,14 @@ async def get_current_user(db: db_dependency, access_token: str = Cookie(None)):
         raise credentials_exception
 
 
-def csrf_validator(request: Request, csrf_token: str = Cookie(None)):
+def csrf_validator(request: Request):
     cookie_csrf_token = request.cookies.get("csrf_token")
-    if not csrf_token == cookie_csrf_token:
+    session_csrf_token = request.session.get("csrf_token")
+    if not session_csrf_token == cookie_csrf_token:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="CSRF validation failed"
         )
-    return csrf_token
+    return cookie_csrf_token
 
 
 auth_user_dependency = Annotated[str, Depends(get_current_user)]
@@ -61,6 +62,7 @@ async def login_for_access_token(
     crsf_token: csrf_dependency,
     form_data: login_dependency,
     db: db_dependency,
+    request: Request,
     access_token: str = Cookie(None),
 ):
     if access_token:
@@ -94,14 +96,19 @@ async def login_for_access_token(
         httponly=True,
         samesite="Lax",
     )
+    request.session["csrf_token"] = csrf_token
     return response
 
 
 @router.post("/logout")
-async def logout(user: auth_user_dependency, crsf_token: csrf_dependency):
+async def logout(
+    request: Request, user: auth_user_dependency, crsf_token: csrf_dependency
+):
     response = JSONResponse(
         content={"detail": "Logged out successfully"}, status_code=200
     )
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="csrf_token")
+    if "csrf_token" in request.session:
+        del request.session["csrf_token"]
     return response

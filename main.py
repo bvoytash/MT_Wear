@@ -1,14 +1,17 @@
+import os
 import uvicorn
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles  # to delete
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from routes import users, auth
 from database import Base, engine
 
 # Don't forget to import the models
 from models.users import User
 
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")  # to delete
@@ -28,6 +31,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 
 @app.get("/", status_code=status.HTTP_200_OK)

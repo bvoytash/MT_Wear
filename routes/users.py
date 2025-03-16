@@ -38,4 +38,6 @@ async def delete_user(
     )
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="csrf_token")
+    if "csrf_token" in request.session:
+        del request.session["csrf_token"]
     return response
