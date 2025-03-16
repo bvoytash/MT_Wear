@@ -60,12 +60,12 @@ async def login_for_access_token(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user"
         )
     check_password(form_data.password, user.password)
-    token = create_access_token(user.email, timedelta(minutes=15))
+    token = create_access_token(user.email, timedelta(minutes=30))
     response = JSONResponse(content={"detail": "Logged in successfully"})
     response.set_cookie(
         "access_token",
         token,
-        max_age=3600,
+        max_age=1800,
         domain=None,
         path="/",
         secure=True,
