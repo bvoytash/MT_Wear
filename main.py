@@ -4,7 +4,6 @@ from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles  # to delete
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 from routes import users, auth
 from database import Base, engine
 
@@ -20,8 +19,7 @@ app.include_router(users.router)
 app.include_router(auth.router)
 
 origins = [
-    "http://frontendurl.uk",
-    "http://localhost:8000",
+    "http://127.0.0.1:5500",  # frontend
 ]
 
 app.add_middleware(
@@ -31,8 +29,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 
 @app.get("/", status_code=status.HTTP_200_OK)

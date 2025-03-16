@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Request
+from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 from database import db_dependency
 from security import hash_password
@@ -30,7 +30,6 @@ async def create_user(
 
 @router.delete("/delete", status_code=status.HTTP_200_OK)
 async def delete_user(
-    request: Request,
     user: auth_user_dependency,
     db: db_dependency,
     crsf_token: csrf_dependency,
@@ -41,7 +40,4 @@ async def delete_user(
         content={"detail": "User deleted successfully"}, status_code=status.HTTP_200_OK
     )
     response.delete_cookie(key="access_token")
-    response.delete_cookie(key="csrf_token")
-    if "csrf_token" in request.session:
-        del request.session["csrf_token"]
     return response
