@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from database import db_dependency
 from security import hash_password
@@ -29,7 +29,10 @@ async def create_user(
 
 @router.delete("/delete", status_code=status.HTTP_200_OK)
 async def delete_user(
-    user: auth_user_dependency, db: db_dependency, crsf_token: csrf_dependency
+    request: Request,
+    user: auth_user_dependency,
+    db: db_dependency,
+    crsf_token: csrf_dependency,
 ):
     db.delete(user)
     db.commit()
