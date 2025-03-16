@@ -117,6 +117,15 @@
             </form>
             <div class="result" id="logoutResult"></div>
         </div>
+
+        <!-- Get CSRF Token Form -->
+        <div class="form-group">
+            <form id="csrfForm">
+                <h2>Get CSRF Token</h2>
+                <button type="submit">Get CSRF Token</button>
+            </form>
+            <div class="result" id="csrfResult"></div>
+        </div>
     </div>
 
     <script>
@@ -247,6 +256,38 @@
                 logoutResultDiv.innerText = 'An error occurred';
                 logoutResultDiv.style.backgroundColor = 'lightcoral';
                 logoutResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Get CSRF Token
+        const csrfForm = document.getElementById('csrfForm');
+        const csrfResultDiv = document.getElementById('csrfResult');
+
+        csrfForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            try {
+                const response = await fetch('/csrf_token', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    csrfResultDiv.innerText = `Success: ${data.detail}`;
+                    csrfResultDiv.style.backgroundColor = 'lightgreen';
+                    csrfResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    csrfResultDiv.innerText = `Error: ${errorData.detail}`;
+                    csrfResultDiv.style.backgroundColor = 'lightcoral';
+                    csrfResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                csrfResultDiv.innerText = 'An error occurred while retrieving the CSRF token.';
+                csrfResultDiv.style.backgroundColor = 'lightcoral';
+                csrfResultDiv.style.visibility = 'visible';
             }
         });
     </script>

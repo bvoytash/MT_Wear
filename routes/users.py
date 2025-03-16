@@ -23,7 +23,8 @@ async def create_user(
     db.add(user)
     db.commit()
     return JSONResponse(
-        content={"detail": "User created successfully"}, status_code=201
+        content={"detail": "User created successfully"},
+        status_code=status.HTTP_201_CREATED,
     )
 
 
@@ -37,7 +38,7 @@ async def delete_user(
     db.delete(user)
     db.commit()
     response = JSONResponse(
-        content={"detail": "User deleted successfully"}, status_code=200
+        content={"detail": "User deleted successfully"}, status_code=status.HTTP_200_OK
     )
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="csrf_token")

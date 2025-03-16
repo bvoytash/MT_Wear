@@ -46,7 +46,7 @@ async def get_current_user(db: db_dependency, access_token: str = Cookie(None)):
 def csrf_validator(request: Request):
     cookie_csrf_token = request.cookies.get("csrf_token")
     session_csrf_token = request.session.get("csrf_token")
-    if not session_csrf_token == cookie_csrf_token:
+    if not session_csrf_token or session_csrf_token != cookie_csrf_token:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="CSRF validation failed"
         )
@@ -75,7 +75,9 @@ async def login_for_access_token(
     check_password(form_data.password, user.password)
     csrf_token = secrets.token_urlsafe(32)
     access_token = create_access_token(user.email, timedelta(minutes=30))
-    response = JSONResponse(content={"detail": "Logged in successfully"})
+    response = JSONResponse(
+        content={"detail": "Logged in successfully"}, status_code=status.HTTP_200_OK
+    )
     response.set_cookie(
         "access_token",
         access_token,
@@ -105,10 +107,30 @@ async def logout(
     request: Request, user: auth_user_dependency, crsf_token: csrf_dependency
 ):
     response = JSONResponse(
-        content={"detail": "Logged out successfully"}, status_code=200
+        content={"detail": "Logged out successfully"}, status_code=status.HTTP_200_OK
     )
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="csrf_token")
     if "csrf_token" in request.session:
         del request.session["csrf_token"]
+    return response
+
+
+@router.get("/csrf_token")
+async def get_token(request: Request):
+    csrf_token = secrets.token_urlsafe(32)
+    request.session["csrf_token"] = csrf_token
+    response = JSONResponse(
+        content={"detail": "CSRF Token set"}, status_code=status.HTTP_200_OK
+    )
+    response.set_cookie(
+        "csrf_token",
+        csrf_token,
+        max_age=1800,
+        domain=None,
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="Lax",
+    )
     return response

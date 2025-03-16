@@ -37,7 +37,9 @@ app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 @app.get("/", status_code=status.HTTP_200_OK)
 async def health_check():
-    return JSONResponse(content={"detail": "The server is working"}, status_code=200)
+    return JSONResponse(
+        content={"detail": "The server is working"}, status_code=status.HTTP_200_OK
+    )
 
 
 if __name__ == "__main__":
