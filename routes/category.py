@@ -22,4 +22,66 @@ async def create_category(create_category_request: create_category_dependency,db
     db.add(new_category)
     db.commit()
     
-    return {"message": "Category created successfully", "category": {"id": new_category.id, "name": new_category.name}}
+    return {"message": "Category created successfully",
+            "category": {"id": new_category.id, "name": new_category.name}}
+
+
+@router.get("/all", status_code=status.HTTP_200_OK)
+async def get_all_categories(skip: int = 0, limit: int = 10, db: db_dependency = db_dependency):
+    categories = db.query(Category).offset(skip).limit(limit).all()
+    
+    if not categories:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No categories found"
+        )
+    
+    serialized_categories = [{"id": category.id, "name": category.name} for category in categories]
+    
+    return {"categories": serialized_categories}
+
+
+@router.get("/{category_id}", status_code=status.HTTP_200_OK)
+async def get_category_by_id(category_id: int, db: db_dependency):
+    category = db.query(Category).filter(Category.id == category_id).first()
+    
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Category with ID {category_id} not found"
+        )
+    
+    return {"category": {"id": category.id, "name": category.name}}
+
+
+@router.put("/{category_id}", status_code=status.HTTP_200_OK)
+async def update_category(category_id: int, updated_data: create_category_dependency, db: db_dependency):
+    category = db.query(Category).filter(Category.id == category_id).first()
+    
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Category with ID {category_id} not found"
+        )
+    
+    category.name = updated_data.name
+    
+    db.commit()
+    
+    return {"message": "Category updated successfully", "category": {"id": category.id, "name": category.name}}
+
+
+@router.delete("/{category_id}", status_code=status.HTTP_200_OK)
+async def delete_category(category_id: int, db: db_dependency):
+    category = db.query(Category).filter(Category.id == category_id).first()
+    
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Category with ID {category_id} not found"
+        )
+    
+    db.delete(category)
+    db.commit()
+    
+    return {"message": f"Category with ID {category_id} deleted successfully"}
