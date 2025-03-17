@@ -25,6 +25,30 @@ class CreateProductRequest(BaseModel):
     }
 
 
+class UpdateProductRequest(BaseModel):
+    name: Optional[str] = Field(min_length=1, max_length=100, example="Updated Product Name")
+    description: Optional[str] = Field(default=None, max_length=500, example="Updated product description.")
+    price: Optional[float] = Field(gt=0, example=29.99)
+    category: Optional[str] = Field(min_length=1, max_length=50, example="Updated Category")
+    image_url: Optional[str] = Field(default=None, example="path/to/updated/image.jpg")
+    is_active: Optional[bool] = Field(default=True, example=False)
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "name": "Updated Product Name",
+                "description": "Updated product description.",
+                "price": 29.99,
+                "category": "Updated Category",
+                "image_url": "path/to/updated/image.jpg",
+                "is_active": False,
+            }
+        }
+    }
+
+
+
+
 class DeleteProductRequest(BaseModel):
     product_id: int = Field(gt=0, example=1)
 
@@ -38,4 +62,5 @@ class DeleteProductRequest(BaseModel):
 
 
 create_product_dependency = Annotated[CreateProductRequest, Form()]
+update_product_dependency = Annotated[UpdateProductRequest, Form()]
 delete_product_dependency = Annotated[DeleteProductRequest, Form()]

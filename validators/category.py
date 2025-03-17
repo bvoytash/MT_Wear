@@ -16,12 +16,12 @@ class CreateCategoryRequest(BaseModel):
 
 
 class UpdateCategoryRequest(BaseModel):
-    name: Optional[str] = Field(min_length=1, max_length=100, example="Updated Electronics")
+    name: Optional[str] = Field(min_length=1, max_length=100, example="Updated T-Shirts")
 
     model_config = {
         "json_schema_extra": {
             "example": {
-                "name": "Updated Electronics",
+                "name": "Updated T-Shirts",
             }
         }
     }

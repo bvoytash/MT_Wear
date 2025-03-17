@@ -4,7 +4,7 @@ from models.category import Category
 from fastapi.responses import JSONResponse
 from database import db_dependency
 from fastapi.encoders import jsonable_encoder
-from validators.product import create_product_dependency, delete_product_dependency
+from validators.product import create_product_dependency, update_product_dependency
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -62,3 +62,61 @@ async def get_all_products(skip: int = 0, limit: int = 10, db: db_dependency = d
         content={"products": serialized_products}, 
         status_code=status.HTTP_200_OK
     )
+
+@router.put("/{product_id}", status_code=status.HTTP_200_OK)
+async def update_product(
+    product_id: int,
+    update_product_request: update_product_dependency,
+    db: db_dependency,
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found"
+        )
+    
+    if update_product_request.category:
+        category = db.query(Category).filter(Category.name == update_product_request.category).first()
+        if not category:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Category '{update_product_request.category}' not found"
+            )
+        product.category_id = category.id
+    
+    # Update the fields only if they are provided in the request
+    if update_product_request.name is not None:
+        product.name = update_product_request.name
+    
+    if update_product_request.description is not None:
+        product.description = update_product_request.description
+    
+    if update_product_request.price is not None:
+        product.price = update_product_request.price
+    
+    if update_product_request.image_url is not None:
+        product.image_url = update_product_request.image_url
+    
+    if update_product_request.is_active is not None:
+        product.is_active = update_product_request.is_active
+    
+    db.commit()
+    
+    return JSONResponse(
+        content={
+            "message": "Product updated successfully",
+            "product": {
+                "id": product.id,
+                "name": product.name,
+                "description": product.description,
+                "price": product.price,
+                "category_id": product.category_id,
+                "image_url": product.image_url,
+                "is_active": product.is_active,
+            },
+        },
+        status_code=status.HTTP_200_OK,
+    )
+
