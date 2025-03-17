@@ -3,12 +3,16 @@ from sqlalchemy.orm import Session
 from models.category import Category
 from database import db_dependency
 from validators.category import create_category_dependency, update_category_dependency
+from routes.auth import auth_user_dependency, csrf_dependency
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_category(create_category_request: create_category_dependency,db: db_dependency,):
+async def create_category(
+    create_category_request: create_category_dependency,
+    db: db_dependency,
+    ):
     existing_category = db.query(Category).filter(Category.name == create_category_request.name).first()
 
     if existing_category:
@@ -27,8 +31,8 @@ async def create_category(create_category_request: create_category_dependency,db
 
 
 @router.get("/all", status_code=status.HTTP_200_OK)
-async def get_all_categories(skip: int = 0, limit: int = 10, db: db_dependency = db_dependency):
-    categories = db.query(Category).offset(skip).limit(limit).all()
+async def get_all_categories(db: db_dependency = db_dependency):
+    categories = db.query(Category).all()
     
     if not categories:
         raise HTTPException(

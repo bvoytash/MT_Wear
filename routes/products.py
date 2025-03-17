@@ -120,3 +120,45 @@ async def update_product(
         status_code=status.HTTP_200_OK,
     )
 
+
+@router.get("/{product_id}", status_code=status.HTTP_200_OK)
+async def get_product_by_id(product_id: int, db: db_dependency):
+
+    product = db.query(Product).filter(Product.id == product_id).first()
+    
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found"
+        )
+    
+    serialized_product = {
+        "id": product.id,
+        "name": product.name,
+        "description": product.description,
+        "price": product.price,
+        "category_id": product.category_id,
+        "image_url": product.image_url,
+        "is_active": product.is_active,
+    }
+    
+    return JSONResponse(
+        content={"product": serialized_product}, 
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.delete("/{product_id}", status_code=status.HTTP_200_OK)
+async def delete_product(product_id: int, db: db_dependency):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found"
+        )
+    
+    db.delete(product)
+    db.commit()
+    
+    return {"message": f"Product with ID {product_id} deleted successfully"}
