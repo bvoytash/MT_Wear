@@ -31,7 +31,7 @@ async def create_product(create_product_request: create_product_dependency, db: 
     db.add(new_product)
     db.commit()
     return JSONResponse(
-        content={"message": "Product created successfully"}, status_code=201
+        content={"message": "Product created successfully"}, status_code=status.HTTP_201_CREATED
     )
 
 @router.get("/all", status_code=status.HTTP_200_OK)
