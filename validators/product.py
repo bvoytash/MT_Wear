@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, HttpUrl
 from typing import Annotated, Optional
 from fastapi import Form
+from fastapi import Depends
 
 
 class CreateProductRequest(BaseModel):
@@ -61,6 +62,12 @@ class DeleteProductRequest(BaseModel):
     }
 
 
+
+class ProductIDRequest(BaseModel):
+    product_id: int = Field(gt=0, example=1)
+
+
+get_id_dependency = Annotated[ProductIDRequest, Depends()]
 create_product_dependency = Annotated[CreateProductRequest, Form()]
 update_product_dependency = Annotated[UpdateProductRequest, Form()]
 delete_product_dependency = Annotated[DeleteProductRequest, Form()]

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from models.category import Category
 from database import db_dependency
-from validators.category import create_category_dependency, update_category_dependency
+from validators.category import create_category_dependency, update_category_dependency, get_id_dependency
 from routes.auth import auth_user_dependency, csrf_dependency
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
@@ -46,8 +46,8 @@ async def get_all_categories(db: db_dependency = db_dependency):
 
 
 @router.get("/{category_id}", status_code=status.HTTP_200_OK)
-async def get_category_by_id(category_id: int, db: db_dependency):
-    category = db.query(Category).filter(Category.id == category_id).first()
+async def get_category_by_id(category_id: int, db: db_dependency, category_request: get_id_dependency):
+    category = db.query(Category).filter(Category.id == category_request.category_id).first()
     
     if not category:
         raise HTTPException(

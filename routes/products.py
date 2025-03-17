@@ -4,7 +4,7 @@ from models.category import Category
 from fastapi.responses import JSONResponse
 from database import db_dependency
 from fastapi.encoders import jsonable_encoder
-from validators.product import create_product_dependency, update_product_dependency
+from validators.product import create_product_dependency, update_product_dependency, get_id_dependency
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -122,9 +122,12 @@ async def update_product(
 
 
 @router.get("/{product_id}", status_code=status.HTTP_200_OK)
-async def get_product_by_id(product_id: int, db: db_dependency):
+async def get_product_by_id(
+    product_id: int,
+    product_request: get_id_dependency,
+    db: db_dependency):
 
-    product = db.query(Product).filter(Product.id == product_id).first()
+    product = db.query(Product).filter(Product.id == product_request.product_id).first()
     
     if not product:
         raise HTTPException(
