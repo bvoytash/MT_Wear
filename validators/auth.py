@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Form
 
 
-class CreateUserRequest(BaseModel):
+class LoginRequest(BaseModel):
     email: str = Field(min_length=1, max_length=50)
     password: str = Field(min_length=1, max_length=50)
 
@@ -14,4 +14,4 @@ class CreateUserRequest(BaseModel):
     }
 
 
-create_user_dependency = Annotated[CreateUserRequest, Form()]
+login_dependency = Annotated[LoginRequest, Form()]
