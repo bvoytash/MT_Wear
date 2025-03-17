@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test User Creation, Login, Deletion, Logout & Token generation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: flex-start;
+        }
+
+        .form-group {
+            width: 300px;
+            margin: 20px;
+        }
+
+        form {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 92%;
+            height: 30px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            height: 40px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            visibility: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <!-- Create User Form -->
+        <div class="form-group">
+            <form id="userForm">
+                <h2>Create User</h2>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required />
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required />
+
+                <button type="submit">Create User</button>
+            </form>
+            <div class="result" id="result"></div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="form-group">
+            <form id="loginForm">
+                <h2>Login</h2>
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" name="email" required />
+
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" name="password" required />
+
+                <button type="submit">Login</button>
+            </form>
+            <div class="result" id="loginResult"></div>
+        </div>
+
+        <!-- Delete User Form (only one button) -->
+        <div class="form-group">
+            <form id="deleteForm">
+                <h2>Delete User</h2>
+                <button type="submit">Delete User</button>
+            </form>
+            <div class="result" id="deleteResult"></div>
+        </div>
+
+        <!-- Logout Form -->
+        <div class="form-group">
+            <form id="logoutForm">
+                <h2>Logout</h2>
+                <button type="submit">Logout</button>
+            </form>
+            <div class="result" id="logoutResult"></div>
+        </div>
+
+        <!-- Get CSRF Token Form -->
+        <div class="form-group">
+            <form id="csrfForm">
+                <h2>Get CSRF Token</h2>
+                <button type="submit">Get CSRF Token</button>
+            </form>
+            <div class="result" id="csrfResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // Util function for getting cookie values
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.indexOf(nameEQ) === 0) {
+                    return decodeURIComponent(cookie.substring(nameEQ.length));
+                }
+            }
+            return null;
+        }
+
+
+        // Create User
+        const userForm = document.getElementById('userForm');
+        const resultDiv = document.getElementById('result');
+
+        userForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+            const formData = new FormData(userForm);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/users/create', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerText = `Success: ${data.detail}`;
+                    resultDiv.style.backgroundColor = 'lightgreen';
+                    resultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    resultDiv.innerText = `Error: ${errorData.detail}`;
+                    resultDiv.style.backgroundColor = 'lightcoral';
+                    resultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerText = 'An error occurred';
+                resultDiv.style.backgroundColor = 'lightcoral';
+                resultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Login
+        const loginForm = document.getElementById('loginForm');
+        const loginResultDiv = document.getElementById('loginResult');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+            const formData = new FormData(loginForm);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/login', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    loginResultDiv.innerText = `Success: ${data.detail}`;
+                    loginResultDiv.style.backgroundColor = 'lightgreen';
+                    loginResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    loginResultDiv.innerText = `Error: ${errorData.detail}`;
+                    loginResultDiv.style.backgroundColor = 'lightcoral';
+                    loginResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                loginResultDiv.innerText = 'An error occurred';
+                loginResultDiv.style.backgroundColor = 'lightcoral';
+                loginResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Delete User
+        const deleteForm = document.getElementById('deleteForm');
+        const deleteResultDiv = document.getElementById('deleteResult');
+
+        deleteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/users/delete', {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    deleteResultDiv.innerText = `Success: ${data.detail}`;
+                    deleteResultDiv.style.backgroundColor = 'lightgreen';
+                    deleteResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    deleteResultDiv.innerText = `Error: ${errorData.detail}`;
+                    deleteResultDiv.style.backgroundColor = 'lightcoral';
+                    deleteResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                deleteResultDiv.innerText = 'An error occurred';
+                deleteResultDiv.style.backgroundColor = 'lightcoral';
+                deleteResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Logout
+        const logoutForm = document.getElementById('logoutForm');
+        const logoutResultDiv = document.getElementById('logoutResult');
+
+        logoutForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/logout', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    logoutResultDiv.innerText = `Success: ${data.detail}`;
+                    logoutResultDiv.style.backgroundColor = 'lightgreen';
+                    logoutResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    logoutResultDiv.innerText = `Error: ${errorData.detail}`;
+                    logoutResultDiv.style.backgroundColor = 'lightcoral';
+                    logoutResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                logoutResultDiv.innerText = 'An error occurred';
+                logoutResultDiv.style.backgroundColor = 'lightcoral';
+                logoutResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Get CSRF Token
+        const csrfForm = document.getElementById('csrfForm');
+        const csrfResultDiv = document.getElementById('csrfResult');
+
+        csrfForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/csrf_token', { method: 'GET' });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.cookie = `csrf_token=${data.csrf_token}; path=/; max-age=1800; samesite=Strict`;
+                    csrfResultDiv.innerText = `Success: ${data.detail}`;
+                    csrfResultDiv.style.backgroundColor = 'lightgreen';
+                    csrfResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    csrfResultDiv.innerText = `Error: ${errorData.detail}`;
+                    csrfResultDiv.style.backgroundColor = 'lightcoral';
+                    csrfResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                csrfResultDiv.innerText = 'An error occurred while retrieving the CSRF token.';
+                csrfResultDiv.style.backgroundColor = 'lightcoral';
+                csrfResultDiv.style.visibility = 'visible';
+            }
+        });
+        fetch('http://127.0.0.1:8000/csrf_token')
+            .then(response => response.json())
+            .then(data => {
+                document.cookie = `csrf_token=${data.csrf_token}; path=/; max-age=1800; samesite=Strict`;
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+</body>
+
+</html>
