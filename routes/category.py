@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from models.category import Category
+from fastapi.responses import JSONResponse
 from database import db_dependency
 from validators.category import create_category_dependency, update_category_dependency, get_id_dependency
 from routes.auth import auth_user_dependency, csrf_dependency
@@ -13,6 +14,7 @@ router = APIRouter(prefix="/categories", tags=["Categories"])
 async def create_category(
     create_category_request: create_category_dependency,
     db: db_dependency,
+    crsf_token: csrf_dependency,
     ):
     existing_category = db.query(Category).filter(Category.name == create_category_request.name).first()
 
@@ -27,12 +29,17 @@ async def create_category(
     db.add(new_category)
     db.commit()
     
-    return {"message": "Category created successfully",
-            "category": {"id": new_category.id, "name": new_category.name}}
+    return JSONResponse (
+        {"detail": "Category created successfully",
+        "category": {"id": new_category.id, "name": new_category.name}},
+        status_code=status.HTTP_201_CREATED
+        )
 
 
 @router.get("/all", status_code=status.HTTP_200_OK)
-async def get_all_categories(db: db_dependency = db_dependency):
+async def get_all_categories(
+    db: db_dependency = db_dependency,
+    crsf_token: csrf_dependency = csrf_dependency,):
     categories = db.query(Category).all()
     
     if not categories:
@@ -43,11 +50,17 @@ async def get_all_categories(db: db_dependency = db_dependency):
     
     serialized_categories = jsonable_encoder(categories)
     
-    return {"categories": serialized_categories}
+    return JSONResponse(
+        {"categories": serialized_categories}
+        )
 
 
 @router.get("/{category_id}", status_code=status.HTTP_200_OK)
-async def get_category_by_id(category_id: int, db: db_dependency, category_request: get_id_dependency):
+async def get_category_by_id(
+    category_id: int, db: db_dependency,
+    category_request: get_id_dependency,
+    crsf_token: csrf_dependency,
+    ):
     category = db.query(Category).filter(Category.id == category_request.category_id).first()
     
     if not category:
@@ -57,11 +70,17 @@ async def get_category_by_id(category_id: int, db: db_dependency, category_reque
         )
     
     serialized_category = jsonable_encoder(category)
-    return {"category":serialized_category}
+    return JSONResponse( 
+        {"category":serialized_category}
+        )
 
 
 @router.put("/{category_id}", status_code=status.HTTP_200_OK)
-async def update_category(category_id: int, updated_data: update_category_dependency, db: db_dependency):
+async def update_category(
+    category_id: int,
+    updated_data: update_category_dependency,
+    db: db_dependency,
+    crsf_token: csrf_dependency,):
     category = db.query(Category).filter(Category.id == category_id).first()
     
     if not category:
@@ -74,11 +93,17 @@ async def update_category(category_id: int, updated_data: update_category_depend
     
     db.commit()
     
-    return {"message": "Category updated successfully", "category": {"id": category.id, "name": category.name}}
+    return JSONResponse(
+        {"detail": "Category updated successfully",
+         "category": {"id": category.id, "name": category.name}}
+    )
 
 
 @router.delete("/{category_id}", status_code=status.HTTP_200_OK)
-async def delete_category(category_id: int, db: db_dependency):
+async def delete_category(
+    category_id: int,
+    db: db_dependency,
+    crsf_token: csrf_dependency,):
     category = db.query(Category).filter(Category.id == category_id).first()
     
     if not category:
@@ -90,4 +115,6 @@ async def delete_category(category_id: int, db: db_dependency):
     db.delete(category)
     db.commit()
     
-    return {"message": f"Category with ID {category_id} deleted successfully"}
+    return JSONResponse(
+        {"detail": f"Category with ID {category_id} deleted successfully"}
+    )

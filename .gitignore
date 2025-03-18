@@ -166,5 +166,6 @@ cython_debug/
 
 # VS Code stuff
 .vscode/
-
+# DB stuff
 db.sqlite
+*.db

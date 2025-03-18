@@ -5,12 +5,13 @@ from fastapi.responses import JSONResponse
 from database import db_dependency
 from fastapi.encoders import jsonable_encoder
 from validators.product import create_product_dependency, update_product_dependency, get_id_dependency
+from routes.auth import csrf_dependency
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_product(create_product_request: create_product_dependency, db: db_dependency,):
+async def create_product(create_product_request: create_product_dependency, db: db_dependency, crsf_token: csrf_dependency,):
     category = db.query(Category).filter(Category.name == create_product_request.category).first()
     
     if not category:
@@ -31,11 +32,13 @@ async def create_product(create_product_request: create_product_dependency, db: 
     db.add(new_product)
     db.commit()
     return JSONResponse(
-        content={"message": "Product created successfully"}, status_code=status.HTTP_201_CREATED
+        {"detail": "Product created successfully"},
+        status_code=status.HTTP_201_CREATED
     )
+    
 
 @router.get("/all", status_code=status.HTTP_200_OK)
-async def get_all_products(skip: int = 0, limit: int = 10, db: db_dependency = db_dependency):
+async def get_all_products(skip: int = 0, limit: int = 10, db: db_dependency = db_dependency, crsf_token: csrf_dependency=csrf_dependency,):
     products = db.query(Product).offset(skip).limit(limit).all()
     
     if not products:
@@ -56,6 +59,7 @@ async def update_product(
     product_id: int,
     update_product_request: update_product_dependency,
     db: db_dependency,
+    crsf_token: csrf_dependency,
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     
@@ -113,7 +117,8 @@ async def update_product(
 async def get_product_by_id(
     product_id: int,
     product_request: get_id_dependency,
-    db: db_dependency):
+    db: db_dependency,
+    crsf_token: csrf_dependency,):
 
     product = db.query(Product).filter(Product.id == product_request.product_id).first()
     
@@ -131,7 +136,7 @@ async def get_product_by_id(
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_200_OK)
-async def delete_product(product_id: int, db: db_dependency):
+async def delete_product(product_id: int, db: db_dependency, crsf_token: csrf_dependency,):
     product = db.query(Product).filter(Product.id == product_id).first()
     
     if not product:
@@ -143,4 +148,6 @@ async def delete_product(product_id: int, db: db_dependency):
     db.delete(product)
     db.commit()
     
-    return {"message": f"Product with ID {product_id} deleted successfully"}
+    return JSONResponse(
+        {"detail": f"Product with ID {product_id} deleted successfully"}
+    )
