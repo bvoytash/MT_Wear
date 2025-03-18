@@ -44,19 +44,7 @@ async def get_all_products(skip: int = 0, limit: int = 10, db: db_dependency = d
             detail="No products found"
         )
     
-     # Serialize products into a list of dictionaries
-    serialized_products = [
-        {
-            "id": product.id,
-            "name": product.name,
-            "description": product.description,
-            "price": product.price,
-            "category_id": product.category_id,
-            "image_url": product.image_url,
-            "is_active": product.is_active,
-        }
-        for product in products
-    ]
+    serialized_products = jsonable_encoder(products)
     
     return JSONResponse(
         content={"products": serialized_products}, 
@@ -135,16 +123,7 @@ async def get_product_by_id(
             detail=f"Product with ID {product_id} not found"
         )
     
-    serialized_product = {
-        "id": product.id,
-        "name": product.name,
-        "description": product.description,
-        "price": product.price,
-        "category_id": product.category_id,
-        "image_url": product.image_url,
-        "is_active": product.is_active,
-    }
-    
+    serialized_product = jsonable_encoder(product)
     return JSONResponse(
         content={"product": serialized_product}, 
         status_code=status.HTTP_200_OK

@@ -4,6 +4,7 @@ from models.category import Category
 from database import db_dependency
 from validators.category import create_category_dependency, update_category_dependency, get_id_dependency
 from routes.auth import auth_user_dependency, csrf_dependency
+from fastapi.encoders import jsonable_encoder
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
 
@@ -40,7 +41,7 @@ async def get_all_categories(db: db_dependency = db_dependency):
             detail="No categories found"
         )
     
-    serialized_categories = [{"id": category.id, "name": category.name} for category in categories]
+    serialized_categories = jsonable_encoder(categories)
     
     return {"categories": serialized_categories}
 
@@ -55,7 +56,8 @@ async def get_category_by_id(category_id: int, db: db_dependency, category_reque
             detail=f"Category with ID {category_id} not found"
         )
     
-    return {"category": {"id": category.id, "name": category.name}}
+    serialized_category = jsonable_encoder(category)
+    return {"category":serialized_category}
 
 
 @router.put("/{category_id}", status_code=status.HTTP_200_OK)
