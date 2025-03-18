@@ -165,6 +165,7 @@
                     resultDiv.innerText = `Success: ${data.detail}`;
                     resultDiv.style.backgroundColor = 'lightgreen';
                     resultDiv.style.visibility = 'visible';
+
                 } else {
                     const errorData = await response.json();
                     resultDiv.innerText = `Error: ${errorData.detail}`;
@@ -198,6 +199,7 @@
 
                 if (response.ok) {
                     const data = await response.json();
+                    document.cookie = `csrf_token=${data.csrf_token}; path=/; max-age=1800; samesite=Strict`;
                     loginResultDiv.innerText = `Success: ${data.detail}`;
                     loginResultDiv.style.backgroundColor = 'lightgreen';
                     loginResultDiv.style.visibility = 'visible';
@@ -291,11 +293,10 @@
             e.preventDefault();
 
             try {
-                const response = await fetch('http://127.0.0.1:8000/csrf_token', { method: 'GET' });
+                const response = await fetch('http://127.0.0.1:8000/csrf_token', { method: 'GET', credentials: 'include' });
 
                 if (response.ok) {
                     const data = await response.json();
-                    document.cookie = `csrf_token=${data.csrf_token}; path=/; max-age=1800; samesite=Strict`;
                     csrfResultDiv.innerText = `Success: ${data.detail}`;
                     csrfResultDiv.style.backgroundColor = 'lightgreen';
                     csrfResultDiv.style.visibility = 'visible';
@@ -312,11 +313,7 @@
                 csrfResultDiv.style.visibility = 'visible';
             }
         });
-        fetch('http://127.0.0.1:8000/csrf_token')
-            .then(response => response.json())
-            .then(data => {
-                document.cookie = `csrf_token=${data.csrf_token}; path=/; max-age=1800; samesite=Strict`;
-            })
+        fetch('http://127.0.0.1:8000/csrf_token', { method: 'GET', credentials: 'include' })
             .catch(error => console.error('Error:', error));
     </script>
 </body>

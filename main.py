@@ -2,7 +2,6 @@ import os
 import uvicorn
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles  # to delete
 from fastapi.middleware.cors import CORSMiddleware
 from routes import users, auth
 from database import Base, engine
@@ -13,7 +12,6 @@ from models.users import User
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")  # to delete
 Base.metadata.create_all(bind=engine)
 app.include_router(users.router)
 app.include_router(auth.router)
