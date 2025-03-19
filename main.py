@@ -3,7 +3,7 @@ import uvicorn
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from routes import users, auth
+from routes import users, auth, products, category
 from database import Base, engine
 
 # Don't forget to import the models
