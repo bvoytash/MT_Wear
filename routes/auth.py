@@ -44,7 +44,7 @@ async def get_current_user(db: db_dependency, access_token: str = Cookie(None)):
 
 
 def csrf_validator(request: Request):
-    cookie_csrf_token = request.cookies.get("csrf_token")
+    cookie_csrf_token = request.cookies.get("csrf_token2")
     header_csrf_token = request.headers.get("X-CSRF-Token")
     if not header_csrf_token or header_csrf_token != cookie_csrf_token:
         raise HTTPException(
@@ -75,7 +75,8 @@ async def login_for_access_token(
     csrf_token = secrets.token_urlsafe(32)
     access_token = create_access_token(user.email, timedelta(minutes=30))
     response = JSONResponse(
-        content={"detail": "Logged in successfully"}, status_code=status.HTTP_200_OK
+        content={"detail": "Logged in successfully"},
+        status_code=status.HTTP_200_OK,
     )
     response.set_cookie(
         "access_token",
@@ -89,6 +90,16 @@ async def login_for_access_token(
     )
     response.set_cookie(
         "csrf_token",
+        csrf_token,
+        max_age=1800,
+        domain=None,
+        path="/",
+        secure=True,
+        httponly=False,
+        samesite="Strict",
+    )
+    response.set_cookie(
+        "csrf_token2",
         csrf_token,
         max_age=1800,
         domain=None,
@@ -113,7 +124,27 @@ async def logout(user: auth_user_dependency, crsf_token: csrf_dependency):
 async def get_token():
     csrf_token = secrets.token_urlsafe(32)
     response = JSONResponse(
-        content={"detail": "CSRF Token set", "csrf_token": csrf_token},
+        content={"detail": "CSRF Token set"},
         status_code=status.HTTP_200_OK,
+    )
+    response.set_cookie(
+        "csrf_token",
+        csrf_token,
+        max_age=1800,
+        domain=None,
+        path="/",
+        secure=True,
+        httponly=False,
+        samesite="Strict",
+    )
+    response.set_cookie(
+        "csrf_token2",
+        csrf_token,
+        max_age=1800,
+        domain=None,
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="Strict",
     )
     return response

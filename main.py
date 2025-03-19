@@ -2,8 +2,6 @@ import os
 import uvicorn
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from routes import users, products, category
-from fastapi.staticfiles import StaticFiles  # to delete
 from fastapi.middleware.cors import CORSMiddleware
 from routes import users, auth
 from database import Base, engine
@@ -16,7 +14,6 @@ from models.category import Category
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")  # to delete
 Base.metadata.create_all(bind=engine)
 
 app.include_router(products.router)
@@ -52,7 +49,7 @@ async def add_security_headers(request, call_next):
         "default-src 'self'; "
         "script-src 'self' https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js 'sha256-QOOQu4W1oxGqd2nbXbxiA1Di6OHQOLQD+o+G9oWL8YY='; "
         "style-src 'self' https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css; "
-        "img-src 'self' https://fastapi.tiangolo.com; http://www.w3.org/2000/svg;"
+        "img-src 'self' https://fastapi.tiangolo.com data:; http://www.w3.org/2000/svg;"
         "frame-ancestors 'none'"
     )
 
