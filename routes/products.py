@@ -12,7 +12,7 @@ router = APIRouter(prefix="/products", tags=["Products"])
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_product(create_product_request: create_product_dependency, db: db_dependency, 
-                        #  crsf_token: csrf_dependency,
+                         crsf_token: csrf_dependency,
                          ):
     category = db.query(Category).filter(Category.name == create_product_request.category).first()
     
@@ -41,7 +41,7 @@ async def create_product(create_product_request: create_product_dependency, db: 
 
 @router.get("/all", status_code=status.HTTP_200_OK)
 async def get_all_products(skip: int = 0, limit: int = 10, db: db_dependency = db_dependency,
-                        #    crsf_token: csrf_dependency=csrf_dependency,
+                           crsf_token: csrf_dependency=csrf_dependency,
                         ):
     products = db.query(Product).offset(skip).limit(limit).all()
     
@@ -63,7 +63,7 @@ async def update_product(
     product_id: int,
     update_product_request: update_product_dependency,
     db: db_dependency,
-    # crsf_token: csrf_dependency,
+    crsf_token: csrf_dependency,
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     
@@ -82,7 +82,7 @@ async def update_product(
             )
         product.category_id = category.id
     
-    # Update the fields only if they are provided in the request
+
     if update_product_request.name is not None:
         product.name = update_product_request.name
     
@@ -118,7 +118,9 @@ async def update_product(
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_200_OK)
-async def delete_product(product_id: int, db: db_dependency, crsf_token: csrf_dependency,):
+async def delete_product(product_id: int, db: db_dependency,
+                         crsf_token: csrf_dependency
+                         ,):
     product = db.query(Product).filter(Product.id == product_id).first()
     
     if not product:
@@ -140,7 +142,7 @@ async def get_sorted_products(
     # limit: int = 10,
     db: db_dependency = db_dependency,
     sorting_dependency: sorting_dependency = sorting_dependency,
-    # crsf_token: csrf_dependency = csrf_dependency,
+    crsf_token: csrf_dependency = csrf_dependency,
 ):
 
     order_column = getattr(Product, sorting_dependency.sort_by.value)
@@ -160,7 +162,7 @@ async def get_sorted_products(
 async def get_filtered_products(
     filtering_dependency: filtering_dependency,
     db: db_dependency = db_dependency,
-    # crsf_token: csrf_dependency = csrf_dependency,
+    crsf_token: csrf_dependency = csrf_dependency,
 ):
     query = db.query(Product)
 
@@ -190,7 +192,7 @@ async def get_product_by_id(
     product_id: int,
     product_request: get_id_dependency,
     db: db_dependency,
-    # crsf_token: csrf_dependency,
+    crsf_token: csrf_dependency,
     ):
 
     product = db.query(Product).filter(Product.id == product_request.product_id).first()
@@ -212,6 +214,7 @@ async def update_is_active(
     product_id: int,
     is_active_dependency: is_active_dependency,
     db: db_dependency = db_dependency,
+    crsf_token: csrf_dependency = csrf_dependency,
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
 
