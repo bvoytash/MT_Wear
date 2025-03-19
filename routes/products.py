@@ -4,7 +4,7 @@ from models.category import Category
 from fastapi.responses import JSONResponse
 from database import db_dependency
 from fastapi.encoders import jsonable_encoder
-from validators.product import create_product_dependency, update_product_dependency,get_id_dependency, sorting_dependency, filtering_dependency, SortByEnum, OrderEnum
+from validators.product import create_product_dependency, update_product_dependency,get_id_dependency, sorting_dependency, filtering_dependency, SortByEnum, OrderEnum, is_active_dependency
 from routes.auth import csrf_dependency
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -205,4 +205,33 @@ async def get_product_by_id(
     return JSONResponse(
         content={"product": serialized_product}, 
         status_code=status.HTTP_200_OK
+    )
+
+@router.patch("/{product_id}/is_active", status_code=status.HTTP_200_OK)
+async def update_is_active(
+    product_id: int,
+    is_active_dependency: is_active_dependency,
+    db: db_dependency = db_dependency,
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found"
+        )
+
+    product.is_active = is_active_dependency.is_active
+    db.commit()
+
+    return JSONResponse(
+        content={
+            "message": f"Product with ID {product_id} updated successfully",
+            "product": {
+                "id": product.id,
+                "name": product.name,
+                "is_active": product.is_active,
+            },
+        },
+        status_code=status.HTTP_200_OK,
     )

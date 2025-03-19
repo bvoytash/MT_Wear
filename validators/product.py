@@ -108,9 +108,19 @@ class FilteringRequest(BaseModel):
                 "max_price": 100.0,
             }
         }
+
+class UpdateIsActiveRequest(BaseModel):
+    is_active: bool = Field(..., example=True)
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "is_active": True
+            }
+        }
     
 
-
+is_active_dependency = Annotated[UpdateIsActiveRequest, Depends()]
 sorting_dependency = Annotated[SortingRequest, Depends()]
 filtering_dependency = Annotated[FilteringRequest, Depends()]
 get_id_dependency = Annotated[ProductIDRequest, Depends()]
