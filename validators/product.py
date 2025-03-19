@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field, HttpUrl
 from typing import Annotated, Optional
-from fastapi import Form
-from fastapi import Depends
+from fastapi import Form, Depends
 from enum import Enum
 
 
