@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import Annotated, Optional
 from fastapi import Form
 from fastapi import Depends
+from enum import Enum
 
 
 class CreateProductRequest(BaseModel):
@@ -67,6 +68,51 @@ class ProductIDRequest(BaseModel):
     product_id: int = Field(gt=0, example=1)
 
 
+
+
+class SortByEnum(str, Enum):
+    name = "name"
+    price = "price"
+
+
+class OrderEnum(str, Enum):
+    asc = "asc"
+    desc = "desc"
+
+
+class SortingRequest(BaseModel):
+    sort_by: SortByEnum = Field(default=SortByEnum.name, example="name")
+    order: OrderEnum = Field(default=OrderEnum.asc, example="asc")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "sort_by": "price",
+                "order": "desc",
+            }
+        }
+
+
+class FilteringRequest(BaseModel):
+    category: Optional[str] = Field(default=None, max_length=50, example="T-Shirts")
+    is_active: Optional[bool] = Field(default=None, example=True)
+    min_price: Optional[float] = Field(default=None, gt=0, example=10.0)
+    max_price: Optional[float] = Field(default=None, gt=0, example=100.0)
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "category": "T-Shirts",
+                "is_active": True,
+                "min_price": 10.0,
+                "max_price": 100.0,
+            }
+        }
+    
+
+
+sorting_dependency = Annotated[SortingRequest, Depends()]
+filtering_dependency = Annotated[FilteringRequest, Depends()]
 get_id_dependency = Annotated[ProductIDRequest, Depends()]
 create_product_dependency = Annotated[CreateProductRequest, Form()]
 update_product_dependency = Annotated[UpdateProductRequest, Form()]
