@@ -22,4 +22,4 @@ class UserProfile(Base):
     city = Column(String(50), nullable=True)
     postal_code = Column(String(20), nullable=True)
 
-    user = relationship("User", back_populates="profile")
+    user = relationship("User", back_populates="profile", ondelete="CASCADE")
