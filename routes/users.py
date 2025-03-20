@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
+from html import escape
 from database import db_dependency
 from security import hash_password, MASTER_PASSWORD_HASH, check_password
 from models.users import User
@@ -19,7 +20,8 @@ async def create_user(
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
     hashed_password = hash_password(create_user_request.password.get_secret_value())
-    user = User(email=create_user_request.email, password=hashed_password)
+    sanitized_email = escape(create_user_request.email)
+    user = User(email=sanitized_email, password=hashed_password)
     db.add(user)
     db.commit()
     return JSONResponse(
