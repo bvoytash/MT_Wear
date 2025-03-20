@@ -42,7 +42,7 @@ class MakeAdminRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "email": "user@example.com",
-                "master_password": "MasterP@ssw0rd",
+                "master_password": "ExampleP@ssw0rd",
             }
         }
 
