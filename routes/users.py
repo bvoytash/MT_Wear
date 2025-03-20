@@ -4,7 +4,7 @@ from html import escape
 from database import db_dependency
 from security import hash_password, MASTER_PASSWORD_HASH, check_password
 from models.users import User
-from validators.users import create_user_dependency, make_admin_dependency
+from validators.users import login_or_create_user_dependency, make_admin_dependency
 from routes.auth import auth_user_dependency, csrf_dependency
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_user(
     db: db_dependency,
-    create_user_request: create_user_dependency,
+    create_user_request: login_or_create_user_dependency,
     crsf_token: csrf_dependency,
 ):
     existing_user = db.query(User).filter_by(email=create_user_request.email).first()
