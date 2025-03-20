@@ -1,5 +1,5 @@
 #### For manual testing use manual_test.html
-##### To simulate the fronend serve the app with Live Server extention (vscode)
+##### To simulate the fronend serve the html file with Live Server extention (vscode)
 
 #### To setup the database you need an .env file with this variables:
 - SQLALCHEMY_DATABASE_URL
