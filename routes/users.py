@@ -18,9 +18,16 @@ async def create_user(
 ):
     existing_user = db.query(User).filter_by(email=create_user_request.email).first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists"
+        )
     hashed_password = hash_password(create_user_request.password.get_secret_value())
     sanitized_email = escape(create_user_request.email)
+    if sanitized_email != create_user_request.email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Don't attack the website please",
+        )
     user = User(email=sanitized_email, password=hashed_password)
     db.add(user)
     db.commit()

@@ -9,13 +9,14 @@ from database import Base, engine
 # Don't forget to import the models
 from models.users import User
 
+FRONTEND_URL = getenv("FRONTEND_URL")
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
 app.include_router(users.router)
 app.include_router(auth.router)
 
 origins = [
-    "http://127.0.0.1:5500",  # frontend
+    FRONTEND_URL,
 ]
 
 app.add_middleware(

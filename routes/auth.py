@@ -14,6 +14,9 @@ router = APIRouter()
 
 SECRET_KEY = getenv("SECRET_KEY")
 ALGORITHM = getenv("ALGORITHM")
+COOKIE_MAX_AGE = getenv("COOKIE_MAX_AGE")
+COOKIE_DELTA = getenv("COOKIE_DELTA")
+CSRF_TOKEN_SIZE = getenv("CSRF_TOKEN_SIZE")
 
 
 def create_access_token(email: str, expires_delta: timedelta):
@@ -68,8 +71,8 @@ async def login_for_access_token(
     if not user:
         raise credentials_exception
     check_password(form_data.password.get_secret_value(), user.password)
-    csrf_token = token_urlsafe(32)
-    access_token = create_access_token(user.email, timedelta(minutes=30))
+    csrf_token = token_urlsafe(CSRF_TOKEN_SIZE)
+    access_token = create_access_token(user.email, timedelta(minutes=COOKIE_DELTA))
     response = JSONResponse(
         content={"detail": "Logged in successfully"},
         status_code=status.HTTP_200_OK,
@@ -77,7 +80,7 @@ async def login_for_access_token(
     response.set_cookie(
         "access_token",
         access_token,
-        max_age=1800,
+        max_age=COOKIE_MAX_AGE,
         domain=None,
         path="/",
         secure=True,
@@ -87,7 +90,7 @@ async def login_for_access_token(
     response.set_cookie(
         "csrf_token",
         csrf_token,
-        max_age=1800,
+        max_age=COOKIE_MAX_AGE,
         domain=None,
         path="/",
         secure=True,
@@ -97,7 +100,7 @@ async def login_for_access_token(
     response.set_cookie(
         "csrf_token2",
         csrf_token,
-        max_age=1800,
+        max_age=COOKIE_MAX_AGE,
         domain=None,
         path="/",
         secure=True,
@@ -118,7 +121,7 @@ async def logout(user: auth_user_dependency, crsf_token: csrf_dependency):
 
 @router.get("/csrf_token")
 async def get_token():
-    csrf_token = token_urlsafe(32)
+    csrf_token = token_urlsafe(CSRF_TOKEN_SIZE)
     response = JSONResponse(
         content={"detail": "CSRF Token set"},
         status_code=status.HTTP_200_OK,
@@ -126,7 +129,7 @@ async def get_token():
     response.set_cookie(
         "csrf_token",
         csrf_token,
-        max_age=1800,
+        max_age=COOKIE_MAX_AGE,
         domain=None,
         path="/",
         secure=True,
@@ -136,7 +139,7 @@ async def get_token():
     response.set_cookie(
         "csrf_token2",
         csrf_token,
-        max_age=1800,
+        max_age=COOKIE_MAX_AGE,
         domain=None,
         path="/",
         secure=True,
