@@ -28,7 +28,7 @@ async def create_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Don't attack the website please",
         )
-    user = User(email=sanitized_email, password=hashed_password)
+    user = User(email=sanitized_email, password=hashed_password, profile=UserProfile())
     db.add(user)
     db.commit()
     return JSONResponse(
