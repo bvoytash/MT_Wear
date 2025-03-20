@@ -38,14 +38,6 @@ class MakeAdminRequest(BaseModel):
         example="SecureP@ssw0rd",
     )
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email": "user@example.com",
-                "master_password": "ExampleP@ssw0rd",
-            }
-        }
-
 
 class UserProfileRequest(BaseModel):
     phone_number: Optional[str] = Field(
