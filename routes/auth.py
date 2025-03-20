@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Cookie, Request
 from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
 from models.users import User
-from security import check_password
+from security import check_password, credentials_exception
 from database import db_dependency
 from validators.auth import login_dependency
 
@@ -14,10 +14,6 @@ router = APIRouter()
 
 SECRET_KEY = getenv("SECRET_KEY")
 ALGORITHM = getenv("ALGORITHM")
-
-credentials_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-)
 
 
 def create_access_token(email: str, expires_delta: timedelta):
@@ -68,7 +64,7 @@ async def login_for_access_token(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Already logged in"
         )
-    user = db.query(User).filter(User.email == form_data.email).first()
+    user = db.query(User).filter_by(email=form_data.email).first()
     if not user:
         raise credentials_exception
     check_password(form_data.password.get_secret_value(), user.password)

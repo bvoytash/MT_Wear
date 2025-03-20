@@ -126,6 +126,21 @@
             </form>
             <div class="result" id="csrfResult"></div>
         </div>
+
+        <!-- Make User an Admin Form -->
+        <div class="form-group">
+            <form id="adminForm">
+                <h2>Make User Admin</h2>
+                <label for="adminEmail">Email:</label>
+                <input type="email" id="adminEmail" name="email" required />
+
+                <label for="masterPassword">Master Password:</label>
+                <input type="password" id="masterPassword" name="master_password" required />
+
+                <button type="submit">Make Admin</button>
+            </form>
+            <div class="result" id="adminResult"></div>
+        </div>
     </div>
 
     <script>
@@ -312,6 +327,43 @@
                 csrfResultDiv.style.visibility = 'visible';
             }
         });
+
+        // Make Admin
+        const adminForm = document.getElementById('adminForm');
+        const adminResultDiv = document.getElementById('adminResult');
+
+        adminForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+            const formData = new FormData(adminForm);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/users/make_admin', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    adminResultDiv.innerText = `Success: ${data.detail}`;
+                    adminResultDiv.style.backgroundColor = 'lightgreen';
+                    adminResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    adminResultDiv.innerText = `Error: ${errorData.detail}`;
+                    adminResultDiv.style.backgroundColor = 'lightcoral';
+                    adminResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                adminResultDiv.innerText = 'An error occurred';
+                adminResultDiv.style.backgroundColor = 'lightcoral';
+                adminResultDiv.style.visibility = 'visible';
+            }
+        });
+
         fetch('http://127.0.0.1:8000/csrf_token', { method: 'GET', credentials: 'include' })
             .catch(error => console.error('Error:', error));
     </script>

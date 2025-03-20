@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 from database import db_dependency
-from security import hash_password
+from security import hash_password, MASTER_PASSWORD_HASH, check_password
 from models.users import User
-from validators.users import create_user_dependency
+from validators.users import create_user_dependency, make_admin_dependency
 from routes.auth import auth_user_dependency, csrf_dependency
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -41,3 +41,26 @@ async def delete_user(
     )
     response.delete_cookie(key="access_token")
     return response
+
+
+@router.post("/make_admin", status_code=status.HTTP_200_OK)
+async def delete_user(
+    db: db_dependency,
+    crsf_token: csrf_dependency,
+    form_data: make_admin_dependency,
+):
+    check_password(form_data.master_password.get_secret_value(), MASTER_PASSWORD_HASH)
+    user = db.query(User).filter_by(email=form_data.email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+    if user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="User is already an admin"
+        )
+    user.is_admin = True
+    db.commit()
+    return JSONResponse(
+        content={"detail": "User is now admin"}, status_code=status.HTTP_200_OK
+    )
