@@ -1,4 +1,4 @@
-#### For manual testing use /static/manual_test.html
+#### For manual testing use manual_test.html
 ##### To simulate the fronend serve the app with Live Server extention (vscode)
 
 #### To setup the database you need an .env file with this variables:
