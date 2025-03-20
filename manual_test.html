@@ -34,8 +34,7 @@
             margin-bottom: 10px;
         }
 
-        input[type="email"],
-        input[type="password"] {
+        input {
             width: 92%;
             height: 30px;
             margin-bottom: 20px;
@@ -140,6 +139,27 @@
                 <button type="submit">Make Admin</button>
             </form>
             <div class="result" id="adminResult"></div>
+        </div>
+
+        <!-- Update Profile Form -->
+        <div class="form-group">
+            <form id="profileForm">
+                <h2>Update Profile</h2>
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" />
+
+                <label for="city">City:</label>
+                <input type="text" id="city" name="city" />
+
+                <label for="postal_code">Postal Code:</label>
+                <input type="text" id="postal_code" name="postal_code" />
+
+                <label for="phone">Phone Number:</label>
+                <input type="tel" id="phone_number" name="phone_number" />
+
+                <button type="submit">Update Profile</button>
+            </form>
+            <div class="result" id="profileResult"></div>
         </div>
     </div>
 
@@ -361,6 +381,42 @@
                 adminResultDiv.innerText = 'An error occurred';
                 adminResultDiv.style.backgroundColor = 'lightcoral';
                 adminResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Profile Update
+        const profileForm = document.getElementById('profileForm');
+        const profileResultDiv = document.getElementById('profileResult');
+
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+            const formData = new FormData(profileForm);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/users/profile', {
+                    method: 'PATCH',
+                    body: formData,
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    profileResultDiv.innerText = `Success: ${data.detail}`;
+                    profileResultDiv.style.backgroundColor = 'lightgreen';
+                    profileResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    profileResultDiv.innerText = `Error: ${errorData.detail}`;
+                    profileResultDiv.style.backgroundColor = 'lightcoral';
+                    profileResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                profileResultDiv.innerText = 'An error occurred';
+                profileResultDiv.style.backgroundColor = 'lightcoral';
+                profileResultDiv.style.visibility = 'visible';
             }
         });
 

@@ -14,9 +14,9 @@ router = APIRouter()
 
 SECRET_KEY = getenv("SECRET_KEY")
 ALGORITHM = getenv("ALGORITHM")
-COOKIE_MAX_AGE = getenv("COOKIE_MAX_AGE")
-COOKIE_DELTA = getenv("COOKIE_DELTA")
-CSRF_TOKEN_SIZE = getenv("CSRF_TOKEN_SIZE")
+COOKIE_MAX_AGE = int(getenv("COOKIE_MAX_AGE"))
+COOKIE_DELTA = int(getenv("COOKIE_DELTA"))
+CSRF_TOKEN_SIZE = int(getenv("CSRF_TOKEN_SIZE"))
 
 
 def create_access_token(email: str, expires_delta: timedelta):

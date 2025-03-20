@@ -16,10 +16,10 @@ class User(Base):
 class UserProfile(Base):
     __tablename__ = "user_profiles"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True)
     phone_number = Column(String(20), nullable=True)
     address = Column(String(200), nullable=True)
     city = Column(String(50), nullable=True)
     postal_code = Column(String(20), nullable=True)
 
-    user = relationship("User", back_populates="profile", ondelete="CASCADE")
+    user = relationship("User", back_populates="profile", passive_deletes=True)

@@ -3,8 +3,12 @@ from fastapi.responses import JSONResponse
 from html import escape
 from database import db_dependency
 from security import hash_password, MASTER_PASSWORD_HASH, check_password
-from models.users import User
-from validators.users import login_or_create_user_dependency, make_admin_dependency
+from models.users import User, UserProfile
+from validators.users import (
+    login_or_create_user_dependency,
+    make_admin_dependency,
+    user_profile_dependency,
+)
 from routes.auth import auth_user_dependency, csrf_dependency
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -72,4 +76,24 @@ async def delete_user(
     db.commit()
     return JSONResponse(
         content={"detail": "User is now admin"}, status_code=status.HTTP_200_OK
+    )
+
+
+@router.patch("/profile", status_code=status.HTTP_200_OK)
+async def update_profile(
+    user: auth_user_dependency,
+    db: db_dependency,
+    form_data: user_profile_dependency,
+    crsf_token: csrf_dependency,
+):
+    user.profile.phone_number = (
+        escape(form_data.phone_number) or user.profile.phone_number
+    )
+    user.profile.address = escape(form_data.address) or user.profile.address
+    user.profile.city = escape(form_data.city) or user.profile.city
+    user.profile.postal_code = escape(form_data.postal_code) or user.profile.postal_code
+    db.commit()
+    return JSONResponse(
+        content={"detail": "Profile updated successfully"},
+        status_code=status.HTTP_200_OK,
     )
