@@ -199,7 +199,6 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    document.cookie = `csrf_token=${data.csrf_token}; path=/; max-age=1800; samesite=Strict`;
                     loginResultDiv.innerText = `Success: ${data.detail}`;
                     loginResultDiv.style.backgroundColor = 'lightgreen';
                     loginResultDiv.style.visibility = 'visible';

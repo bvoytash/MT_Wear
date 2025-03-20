@@ -1,9 +1,5 @@
-import os
 from argon2 import PasswordHasher
-from dotenv import load_dotenv
 from fastapi import HTTPException
-
-load_dotenv()
 
 ph = PasswordHasher()
 

@@ -1,17 +1,26 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr, EmailStr
 from typing import Annotated
 from fastapi import Form
 
 
 class CreateUserRequest(BaseModel):
-    email: str = Field(min_length=1, max_length=50)
-    password: str = Field(min_length=1, max_length=50)
+    email: EmailStr = Field(
+        min_length=3,
+        max_length=64,
+        description="User email address",
+        example="user@example.com",
+    )
+    password: SecretStr = Field(
+        min_length=3,
+        max_length=64,
+        description="User password",
+        example="SecureP@ssw0rd",
+    )
 
-    model_config = {
-        "json_schema_extra": {
-            "example": {"email": "abv@abv.bg", "password": "client_pass1234"}
+    class Config:
+        json_schema_extra = {
+            "example": {"email": "user@example.com", "password": "SecureP@ssw0rd"}
         }
-    }
 
 
 create_user_dependency = Annotated[CreateUserRequest, Form()]

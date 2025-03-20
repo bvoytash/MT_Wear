@@ -18,7 +18,7 @@ async def create_user(
     existing_user = db.query(User).filter_by(email=create_user_request.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
-    hashed_password = hash_password(create_user_request.password)
+    hashed_password = hash_password(create_user_request.password.get_secret_value())
     user = User(email=create_user_request.email, password=hashed_password)
     db.add(user)
     db.commit()

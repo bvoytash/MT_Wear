@@ -1,5 +1,5 @@
-import os
-import secrets
+from os import getenv
+from secrets import token_urlsafe
 from datetime import timedelta, datetime, timezone
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, Cookie, Request
@@ -12,8 +12,8 @@ from validators.auth import login_dependency
 
 router = APIRouter()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
+SECRET_KEY = getenv("SECRET_KEY")
+ALGORITHM = getenv("ALGORITHM")
 
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
@@ -71,8 +71,8 @@ async def login_for_access_token(
     user = db.query(User).filter(User.email == form_data.email).first()
     if not user:
         raise credentials_exception
-    check_password(form_data.password, user.password)
-    csrf_token = secrets.token_urlsafe(32)
+    check_password(form_data.password.get_secret_value(), user.password)
+    csrf_token = token_urlsafe(32)
     access_token = create_access_token(user.email, timedelta(minutes=30))
     response = JSONResponse(
         content={"detail": "Logged in successfully"},
@@ -122,7 +122,7 @@ async def logout(user: auth_user_dependency, crsf_token: csrf_dependency):
 
 @router.get("/csrf_token")
 async def get_token():
-    csrf_token = secrets.token_urlsafe(32)
+    csrf_token = token_urlsafe(32)
     response = JSONResponse(
         content={"detail": "CSRF Token set"},
         status_code=status.HTTP_200_OK,
