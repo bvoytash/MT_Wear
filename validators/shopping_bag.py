@@ -59,43 +59,6 @@ class CreateShoppingBagRequest(BaseModel):
     }
 
 
-# class BagItemResponse(BaseModel):
-#     id: int = Field(..., example=1, description="ID of the bag item")
-#     product_id: int = Field(..., example=1, description="ID of the product")
-#     product_name: str = Field(..., example="Sample Product", description="Name of the product")
-#     quantity: int = Field(..., example=2, description="Quantity of the product")
-#     price: float = Field(..., example=19.99, description="Price of the product at the time it was added")
-#     total_price: float = Field(..., example=39.98, description="Total price (price * quantity)")
-
-
-
-#     model_config = {
-#         "json_schema_extra": {
-#             "example": {
-#                 "id": 1,
-#                 "user_id": 1,
-#                 "items": [
-#                     {
-#                         "id": 1,
-#                         "product_id": 1,
-#                         "product_name": "Sample Product",
-#                         "quantity": 2,
-#                         "price": 19.99,
-#                         "total_price": 39.98,
-#                     },
-#                     {
-#                         "id": 2,
-#                         "product_id": 2,
-#                         "product_name": "Another Product",
-#                         "quantity": 1,
-#                         "price": 9.99,
-#                         "total_price": 9.99,
-#                     },
-#                 ],
-#             }
-#         }
-#     }
-
 
 create_bag_item_dependency = Annotated[CreateBagItemRequest, Form()]
 update_bag_item_dependency = Annotated[UpdateBagItemRequest, Form()]

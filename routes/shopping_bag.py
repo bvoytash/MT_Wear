@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from database import db_dependency
 from models.shopping_bag import ShoppingBag, BagItem
+from validators.shopping_bag import create_bag_item_dependency,update_bag_item_dependency, create_shopping_bag_dependency
 
 router = APIRouter(
     prefix="/shopping_bag",
@@ -10,52 +11,67 @@ router = APIRouter(
 )
 
 
-@router.get("/get_or_create", status_code=status.HTTP_200_OK)
-async def get_or_create_shopping_bag(
+@router.post("/create", status_code=status.HTTP_201_CREATED)
+async def create_shopping_bag(
     user_id: int,
     db: db_dependency,
+    request: create_shopping_bag_dependency
 ):
-    shopping_bag = db.query(ShoppingBag).filter(ShoppingBag.user_id == user_id).first()
+    shopping_bag = db.query(ShoppingBag).filter(ShoppingBag.user_id == request.user_id).first()
     
-    if not shopping_bag:
-        shopping_bag = ShoppingBag(user_id=user_id)
-        db.add(shopping_bag)
-        db.commit()
-        db.refresh(shopping_bag)
+    if shopping_bag:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Shopping bag already exists for this user"
+        )
+    
+    new_shopping_bag = ShoppingBag(user_id=request.user_id)
+    db.add(new_shopping_bag)
+    db.commit()
 
-    serialized_bag = jsonable_encoder(shopping_bag)
+
+    for item in request.items:
+        new_item = BagItem(
+            bag_id=new_shopping_bag.id,
+            product_id=item.product_id,
+            product_name=item.product_name,
+            price=item.price,
+            quantity=item.quantity,
+            total_price=item.price * item.quantity,
+        )
+    db.add(new_item)
+
+    db.commit()
+
+    serialized_bag = jsonable_encoder(new_shopping_bag)
     
     return JSONResponse(
         content={"shopping_bag": serialized_bag},
-        status_code=status.HTTP_200_OK
+        status_code=status.HTTP_201_CREATED
     )
 
 
 @router.post("/add_item", status_code=status.HTTP_201_CREATED)
 async def add_item_to_bag(
-    user_id: int,
-    product_id: int,
-    product_name: str,
-    price: float,
-    quantity: int,
-    db: db_dependency
+    db: db_dependency,
+    request: create_bag_item_dependency,
 ):
-    # Get or create the shopping bag for the user
-    shopping_bag = db.query(ShoppingBag).filter(ShoppingBag.user_id == user_id).first()
+
+    shopping_bag = db.query(ShoppingBag).filter(ShoppingBag.user_id == request.user_id).first()
     
     if not shopping_bag:
-        shopping_bag = ShoppingBag(user_id=user_id)
+        shopping_bag = ShoppingBag(user_id=request.user_id)
         db.add(shopping_bag)
         db.commit()
         db.refresh(shopping_bag)
 
     existing_item = db.query(BagItem).filter(
         BagItem.bag_id == shopping_bag.id,
-        BagItem.product_id == product_id,
+        BagItem.product_id == request.product_id,
     ).first()
 
     if existing_item:
-        existing_item.quantity += quantity
+        existing_item.quantity += request.quantity
         existing_item.total_price = existing_item.price * existing_item.quantity
         db.commit()
         
@@ -67,11 +83,11 @@ async def add_item_to_bag(
 
     new_item = BagItem(
         bag_id=shopping_bag.id,
-        product_id=product_id,
-        product_name=product_name,
-        price=price,
-        quantity=quantity,
-        total_price=price * quantity,
+        product_id=request.product_id,
+        product_name=request.product_name,
+        price=request.price,
+        quantity=request.quantity,
+        total_price=request.price * request.quantity,
     )
     
     db.add(new_item)
