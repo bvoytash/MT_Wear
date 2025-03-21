@@ -165,3 +165,45 @@ async def get_shopping_bag_items(
         content={"items": serialized_items},
         status_code=status.HTTP_200_OK
     )
+
+
+@router.put("/edit_item", status_code=status.HTTP_200_OK)
+async def edit_bag_item(
+    user_id: int,
+    product_id: int,
+    request: update_bag_item_dependency,  # Validates incoming data for quantity updates
+    db: db_dependency,
+):
+
+    shopping_bag = db.query(ShoppingBag).filter(ShoppingBag.user_id == user_id).first()
+
+    if not shopping_bag:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Shopping bag not found"
+        )
+
+    
+    item_to_update = db.query(BagItem).filter(
+        BagItem.bag_id == shopping_bag.id,
+        BagItem.product_id == product_id,
+    ).first()
+
+    if not item_to_update:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Item not found in bag"
+        )
+
+    if request.quantity is not None:
+        item_to_update.quantity = request.quantity
+        item_to_update.total_price = item_to_update.price * request.quantity
+
+    db.commit()
+
+    serialized_updated_item = jsonable_encoder(item_to_update)
+
+    return JSONResponse(
+        content={"item": serialized_updated_item},
+        status_code=status.HTTP_200_OK
+    )
