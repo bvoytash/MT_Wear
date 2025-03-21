@@ -4,7 +4,7 @@ from fastapi import Form
 from re import fullmatch
 
 
-class LoginOrCreateUserRequest(BaseModel):
+class LoginOrCreateOrUpdateUserRequest(BaseModel):
     email: EmailStr = Field(
         description="User email address",
         example="user@example.com",
@@ -124,6 +124,57 @@ class UserProfileRequest(BaseModel):
         }
 
 
-login_or_create_user_dependency = Annotated[LoginOrCreateUserRequest, Form()]
+class ChangePasswordRequest(BaseModel):
+    current_password: SecretStr = Field(
+        description="Current user password",
+        example="SecureP@ssw0rd",
+    )
+    new_password: SecretStr = Field(
+        description="New user password",
+        example="NewSecureP@ssw0rd",
+    )
+    re_password: SecretStr = Field(
+        description="Confirm new password",
+        example="NewSecureP@ssw0rd",
+    )
+
+    @validator("current_password")
+    def validate_current_password(cls, v):
+        if len(v.get_secret_value()) < 3 or len(v.get_secret_value()) > 64:
+            raise ValueError(
+                "Current password must be between 3 and 64 characters long"
+            )
+        return v
+
+    @validator("new_password")
+    def validate_new_password(cls, v):
+        if len(v.get_secret_value()) < 3 or len(v.get_secret_value()) > 64:
+            raise ValueError("New password must be between 3 and 64 characters long")
+        return v
+
+    @validator("re_password")
+    def validate_re_password(cls, v, values):
+        if v is None or values.get("new_password") is None:
+            raise ValueError("You must use a valid password and confirm it")
+
+        if v.get_secret_value() != values.get("new_password").get_secret_value():
+            raise ValueError("Passwords do not match")
+
+        return v
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "current_password": "SecureP@ssw0rd",
+                "new_password": "NewSecureP@ssw0rd",
+                "re_password": "NewSecureP@ssw0rd",
+            }
+        }
+
+
+login_or_create_or_update_user_dependency = Annotated[
+    LoginOrCreateOrUpdateUserRequest, Form()
+]
 make_admin_dependency = Annotated[MakeAdminRequest, Form()]
 user_profile_dependency = Annotated[UserProfileRequest, Form()]
+change_password_dependency = Annotated[ChangePasswordRequest, Form()]

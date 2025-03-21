@@ -8,7 +8,7 @@ from jose import jwt, JWTError
 from models.users import User
 from security import check_password, credentials_exception
 from database import db_dependency
-from validators.users import login_or_create_user_dependency
+from validators.users import login_or_create_or_update_user_dependency
 
 router = APIRouter()
 
@@ -59,7 +59,7 @@ csrf_dependency = Annotated[str, Depends(csrf_validator)]
 @router.post("/login")
 async def login_for_access_token(
     crsf_token: csrf_dependency,
-    form_data: login_or_create_user_dependency,
+    form_data: login_or_create_or_update_user_dependency,
     db: db_dependency,
     access_token: str = Cookie(None),
 ):

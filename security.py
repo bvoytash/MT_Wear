@@ -22,3 +22,10 @@ def check_password(password, hashed_password):
         return ph.verify(hashed_password, password)
     except:
         raise credentials_exception
+
+
+def simple_check_password(password, hashed_password):
+    try:
+        return ph.verify(hashed_password, password)
+    except:
+        return False
