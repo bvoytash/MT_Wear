@@ -3,16 +3,22 @@ import uvicorn
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from routes import users, auth
+from routes import users, auth, products, category
 from database import Base, engine
 
 # Don't forget to import the models
 from models.users import User
+from models.product import Product
+from models.category import Category
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
+
+app.include_router(products.router)
+app.include_router(category.router)
+
 app.include_router(users.router)
 app.include_router(auth.router)
 
