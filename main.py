@@ -1,7 +1,8 @@
-import os
-import uvicorn
-from fastapi import FastAPI, status
+from os import getenv
+from uvicorn import run
+from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from routes import users, auth
 from database import Base, engine
@@ -9,15 +10,14 @@ from database import Base, engine
 # Don't forget to import the models
 from models.users import User
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-
+FRONTEND_URL = getenv("FRONTEND_URL")
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
 app.include_router(users.router)
 app.include_router(auth.router)
 
 origins = [
-    "http://127.0.0.1:5500",  # frontend
+    FRONTEND_URL,
 ]
 
 app.add_middleware(
@@ -27,6 +27,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error_messages = [err["msg"] for err in exc.errors()]
+    error_response = {"detail": ", ".join(error_messages)}
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content=error_response
+    )
 
 
 @app.middleware("http")
@@ -58,6 +67,6 @@ async def health_check():
 
 
 if __name__ == "__main__":
-    uvicorn.run(
+    run(
         "main:app", host="0.0.0.0", port=8000, workers=4, reload=True
     )  # remove reload when finished with testing

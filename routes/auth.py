@@ -1,23 +1,22 @@
-import os
-import secrets
+from os import getenv
+from secrets import token_urlsafe
 from datetime import timedelta, datetime, timezone
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, Cookie, Request
 from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
 from models.users import User
-from security import check_password
+from security import check_password, credentials_exception
 from database import db_dependency
-from validators.auth import login_dependency
+from validators.users import login_or_create_or_update_user_dependency
 
 router = APIRouter()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-
-credentials_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-)
+SECRET_KEY = getenv("SECRET_KEY")
+ALGORITHM = getenv("ALGORITHM")
+COOKIE_MAX_AGE = int(getenv("COOKIE_MAX_AGE"))
+COOKIE_DELTA = int(getenv("COOKIE_DELTA"))
+CSRF_TOKEN_SIZE = int(getenv("CSRF_TOKEN_SIZE"))
 
 
 def create_access_token(email: str, expires_delta: timedelta):
@@ -60,7 +59,7 @@ csrf_dependency = Annotated[str, Depends(csrf_validator)]
 @router.post("/login")
 async def login_for_access_token(
     crsf_token: csrf_dependency,
-    form_data: login_dependency,
+    form_data: login_or_create_or_update_user_dependency,
     db: db_dependency,
     access_token: str = Cookie(None),
 ):
@@ -68,12 +67,12 @@ async def login_for_access_token(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Already logged in"
         )
-    user = db.query(User).filter(User.email == form_data.email).first()
+    user = db.query(User).filter_by(email=form_data.email).first()
     if not user:
         raise credentials_exception
-    check_password(form_data.password, user.password)
-    csrf_token = secrets.token_urlsafe(32)
-    access_token = create_access_token(user.email, timedelta(minutes=30))
+    check_password(form_data.password.get_secret_value(), user.password)
+    csrf_token = token_urlsafe(CSRF_TOKEN_SIZE)
+    access_token = create_access_token(user.email, timedelta(minutes=COOKIE_DELTA))
     response = JSONResponse(
         content={"detail": "Logged in successfully"},
         status_code=status.HTTP_200_OK,
@@ -81,7 +80,7 @@ async def login_for_access_token(
     response.set_cookie(
         "access_token",
         access_token,
-        max_age=1800,
+        max_age=COOKIE_MAX_AGE,
         domain=None,
         path="/",
         secure=True,
@@ -91,7 +90,7 @@ async def login_for_access_token(
     response.set_cookie(
         "csrf_token",
         csrf_token,
-        max_age=1800,
+        max_age=COOKIE_MAX_AGE,
         domain=None,
         path="/",
         secure=True,
@@ -101,7 +100,7 @@ async def login_for_access_token(
     response.set_cookie(
         "csrf_token2",
         csrf_token,
-        max_age=1800,
+        max_age=COOKIE_MAX_AGE,
         domain=None,
         path="/",
         secure=True,
@@ -122,7 +121,7 @@ async def logout(user: auth_user_dependency, crsf_token: csrf_dependency):
 
 @router.get("/csrf_token")
 async def get_token():
-    csrf_token = secrets.token_urlsafe(32)
+    csrf_token = token_urlsafe(CSRF_TOKEN_SIZE)
     response = JSONResponse(
         content={"detail": "CSRF Token set"},
         status_code=status.HTTP_200_OK,
@@ -130,7 +129,7 @@ async def get_token():
     response.set_cookie(
         "csrf_token",
         csrf_token,
-        max_age=1800,
+        max_age=COOKIE_MAX_AGE,
         domain=None,
         path="/",
         secure=True,
@@ -140,7 +139,7 @@ async def get_token():
     response.set_cookie(
         "csrf_token2",
         csrf_token,
-        max_age=1800,
+        max_age=COOKIE_MAX_AGE,
         domain=None,
         path="/",
         secure=True,
