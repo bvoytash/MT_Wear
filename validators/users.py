@@ -6,17 +6,25 @@ from re import fullmatch
 
 class LoginOrCreateUserRequest(BaseModel):
     email: EmailStr = Field(
-        min_length=3,
-        max_length=64,
         description="User email address",
         example="user@example.com",
     )
     password: SecretStr = Field(
-        min_length=3,
-        max_length=64,
         description="User password",
         example="SecureP@ssw0rd",
     )
+
+    @validator("email")
+    def validate_email(cls, v):
+        if len(v) < 3 or len(v) > 64:
+            raise ValueError("Email must be between 3 and 64 characters long")
+        return v
+
+    @validator("password")
+    def validate_password(cls, v):
+        if len(v.get_secret_value()) < 3 or len(v.get_secret_value()) > 64:
+            raise ValueError("Password must be between 3 and 64 characters long")
+        return v
 
     class Config:
         json_schema_extra = {
@@ -26,17 +34,25 @@ class LoginOrCreateUserRequest(BaseModel):
 
 class MakeAdminRequest(BaseModel):
     email: EmailStr = Field(
-        min_length=3,
-        max_length=64,
         description="User email address",
         example="user@example.com",
     )
     master_password: SecretStr = Field(
-        min_length=3,
-        max_length=64,
         description="Master password",
-        example="SecureP@ssw0rd",
+        example="MasterP@ssw0rd",
     )
+
+    @validator("email")
+    def validate_email(cls, v):
+        if len(v) < 3 or len(v) > 64:
+            raise ValueError("Email must be between 3 and 64 characters long")
+        return v
+
+    @validator("master_password")
+    def validate_master_password(cls, v):
+        if len(v.get_secret_value()) < 3 or len(v.get_secret_value()) > 64:
+            raise ValueError("Master password must be between 3 and 64 characters long")
+        return v
 
     class Config:
         json_schema_extra = {

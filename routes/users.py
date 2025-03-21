@@ -97,3 +97,13 @@ async def update_profile(
         content={"detail": "Profile updated successfully"},
         status_code=status.HTTP_200_OK,
     )
+
+
+@router.get("/profile", status_code=status.HTTP_200_OK)
+async def update_profile(
+    user: auth_user_dependency,
+    crsf_token: csrf_dependency,
+):
+    return JSONResponse(
+        content={"detail": user.to_dict()}, status_code=status.HTTP_200_OK
+    )

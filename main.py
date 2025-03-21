@@ -1,7 +1,8 @@
 from os import getenv
 from uvicorn import run
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from routes import users, auth
 from database import Base, engine
@@ -26,6 +27,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error_messages = [err["msg"] for err in exc.errors()]
+    error_response = {"detail": ", ".join(error_messages)}
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content=error_response
+    )
 
 
 @app.middleware("http")

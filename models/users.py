@@ -12,6 +12,13 @@ class User(Base):
 
     profile = relationship("UserProfile", back_populates="user", uselist=False)
 
+    def to_dict(self):
+        return {
+            "email": self.email,
+            "is_admin": self.is_admin,
+            "profile": self.profile.to_dict(),
+        }
+
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"
@@ -23,3 +30,11 @@ class UserProfile(Base):
     postal_code = Column(String(20), nullable=True)
 
     user = relationship("User", back_populates="profile", passive_deletes=True)
+
+    def to_dict(self):
+        return {
+            "phone_number": self.phone_number,
+            "address": self.address,
+            "city": self.city,
+            "postal_code": self.postal_code,
+        }

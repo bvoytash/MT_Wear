@@ -161,6 +161,15 @@
             </form>
             <div class="result" id="profileResult"></div>
         </div>
+
+        <!-- Get Profile Info Form -->
+        <div class="form-group">
+            <form id="getProfileInfoForm">
+                <h2>Get Data</h2>
+                <button type="submit">Get Profile Info</button>
+            </form>
+            <div class="result" id="getProfileInfo"></div>
+        </div>
     </div>
 
     <script>
@@ -417,6 +426,40 @@
                 profileResultDiv.innerText = 'An error occurred';
                 profileResultDiv.style.backgroundColor = 'lightcoral';
                 profileResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Get Profile Info
+        const getProfileInfoForm = document.getElementById('getProfileInfoForm');
+        const getProfileInfoDiv = document.getElementById('getProfileInfo');
+
+        getProfileInfoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/users/profile`, {
+                    method: 'GET',
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    getProfileInfoDiv.innerText = `Success: \n${data.detail.email}\n${data.detail.is_admin}\n${data.detail.profile.address}\n${data.detail.profile.city}\n${data.detail.profile.postal_code}\n${data.detail.profile.phone_number}`;
+                    getProfileInfoDiv.style.backgroundColor = 'lightgreen';
+                    getProfileInfoDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    getProfileInfoDiv.innerText = `Error: ${errorData.detail}`;
+                    getProfileInfoDiv.style.backgroundColor = 'lightcoral';
+                    getProfileInfoDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                getProfileInfoDiv.innerText = 'An error occurred';
+                getProfileInfoDiv.style.backgroundColor = 'lightcoral';
+                getProfileInfoDiv.style.visibility = 'visible';
             }
         });
 
