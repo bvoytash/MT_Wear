@@ -6,7 +6,7 @@ class ShoppingBag(Base):
     __tablename__ = "shopping_bags"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     user = relationship("User", back_populates="shopping_bag")
     items = relationship("BagItem", back_populates="shopping_bag", cascade="all, delete-orphan")
