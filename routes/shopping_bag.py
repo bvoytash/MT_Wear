@@ -13,7 +13,6 @@ router = APIRouter(
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_shopping_bag(
-    user_id: int,
     db: db_dependency,
     request: create_shopping_bag_dependency
 ):
@@ -171,7 +170,7 @@ async def get_shopping_bag_items(
 async def edit_bag_item(
     user_id: int,
     product_id: int,
-    request: update_bag_item_dependency,  # Validates incoming data for quantity updates
+    request: update_bag_item_dependency,
     db: db_dependency,
 ):
 
