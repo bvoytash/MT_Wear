@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Cookie, Request
 from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
 from models.users import User
-from security import check_password, credentials_exception
+from security import check_password, credentials_exception, limiter
 from database import db_dependency
 from validators.users import login_or_create_or_update_user_dependency
 
@@ -42,6 +42,20 @@ async def get_current_user(db: db_dependency, access_token: str = Cookie(None)):
         raise credentials_exception
 
 
+auth_user_dependency = Annotated[str, Depends(get_current_user)]
+
+
+async def get_current_admin(db: db_dependency, user: auth_user_dependency):
+    if not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required"
+        )
+    return user
+
+
+auth_admin_dependency = Annotated[str, Depends(get_current_admin)]
+
+
 def csrf_validator(request: Request):
     cookie_csrf_token = request.cookies.get("csrf_token2")
     header_csrf_token = request.headers.get("X-CSRF-Token")
@@ -52,12 +66,13 @@ def csrf_validator(request: Request):
     return cookie_csrf_token
 
 
-auth_user_dependency = Annotated[str, Depends(get_current_user)]
 csrf_dependency = Annotated[str, Depends(csrf_validator)]
 
 
 @router.post("/login")
+@limiter.limit("5/minute", per_method=True)
 async def login_for_access_token(
+    request: Request,
     crsf_token: csrf_dependency,
     form_data: login_or_create_or_update_user_dependency,
     db: db_dependency,
@@ -111,7 +126,10 @@ async def login_for_access_token(
 
 
 @router.post("/logout")
-async def logout(user: auth_user_dependency, crsf_token: csrf_dependency):
+@limiter.limit("15/minute", per_method=True)
+async def logout(
+    request: Request, user: auth_user_dependency, crsf_token: csrf_dependency
+):
     response = JSONResponse(
         content={"detail": "Logged out successfully"}, status_code=status.HTTP_200_OK
     )

@@ -1,5 +1,5 @@
 from os import getenv
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from html import escape
 from datetime import timedelta
@@ -9,6 +9,7 @@ from security import (
     MASTER_PASSWORD_HASH,
     check_password,
     simple_check_password,
+    limiter,
 )
 from models.users import User, UserProfile
 from validators.users import (
@@ -28,7 +29,9 @@ COOKIE_MAX_AGE = int(getenv("COOKIE_MAX_AGE"))
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute", per_method=True)
 async def create_user(
+    request: Request,
     db: db_dependency,
     form_data: login_or_create_or_update_user_dependency,
     crsf_token: csrf_dependency,
@@ -55,7 +58,9 @@ async def create_user(
 
 
 @router.delete("/delete", status_code=status.HTTP_200_OK)
+@limiter.limit("15/minute", per_method=True)
 async def delete_user(
+    request: Request,
     user: auth_user_dependency,
     db: db_dependency,
     crsf_token: csrf_dependency,
@@ -70,7 +75,9 @@ async def delete_user(
 
 
 @router.post("/make_admin", status_code=status.HTTP_200_OK)
+@limiter.limit("15/minute", per_method=True)
 async def delete_user(
+    request: Request,
     db: db_dependency,
     crsf_token: csrf_dependency,
     form_data: make_admin_dependency,
@@ -93,7 +100,9 @@ async def delete_user(
 
 
 @router.patch("/profile", status_code=status.HTTP_200_OK)
+@limiter.limit("30/minute", per_method=True)
 async def update_profile(
+    request: Request,
     user: auth_user_dependency,
     db: db_dependency,
     form_data: user_profile_dependency,
@@ -113,14 +122,19 @@ async def update_profile(
 
 
 @router.get("/profile", status_code=status.HTTP_200_OK)
-async def update_profile(user: auth_user_dependency, crsf_token: csrf_dependency):
+@limiter.limit("50/minute", per_method=True)
+async def update_profile(
+    request: Request, user: auth_user_dependency, crsf_token: csrf_dependency
+):
     return JSONResponse(
         content={"detail": user.to_dict()}, status_code=status.HTTP_200_OK
     )
 
 
 @router.post("/change_email")
+@limiter.limit("30/minute", per_method=True)
 async def change_email(
+    request: Request,
     user: auth_user_dependency,
     db: db_dependency,
     crsf_token: csrf_dependency,
@@ -165,7 +179,9 @@ async def change_email(
 
 
 @router.post("/change_password")
+@limiter.limit("30/minute", per_method=True)
 async def change_email(
+    request: Request,
     user: auth_user_dependency,
     db: db_dependency,
     crsf_token: csrf_dependency,

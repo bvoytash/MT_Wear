@@ -1,6 +1,8 @@
 from argon2 import PasswordHasher
 from fastapi import HTTPException, status
 from os import getenv
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 ph = PasswordHasher()
 
@@ -10,6 +12,13 @@ MASTER_PASSWORD_HASH = ph.hash(MASTER_PASSWORD)
 
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+)
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    strategy="fixed-window",
+    storage_uri="memory://",
+    enabled=True,
 )
 
 
