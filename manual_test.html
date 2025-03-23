@@ -141,6 +141,21 @@
             <div class="result" id="adminResult"></div>
         </div>
 
+        <!-- Remove Admin Form -->
+        <div class="form-group">
+            <form id="removeAdminForm">
+                <h2>Remove Admin</h2>
+                <label for="removeAdminEmail">Email:</label>
+                <input type="email" id="removeAdminEmail" name="email" required />
+
+                <label for="masterPassword">Master Password:</label>
+                <input type="password" id="masterPassword" name="master_password" required />
+
+                <button type="submit">Remove Admin</button>
+            </form>
+            <div class="result" id="removeAdminResult"></div>
+        </div>
+
         <!-- Update Profile Form -->
         <div class="form-group">
             <form id="profileForm">
@@ -424,6 +439,42 @@
                 adminResultDiv.innerText = 'An error occurred';
                 adminResultDiv.style.backgroundColor = 'lightcoral';
                 adminResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Remove Admin
+        const removeAdminForm = document.getElementById('removeAdminForm');
+        const removeAdminResultDiv = document.getElementById('removeAdminResult');
+
+        removeAdminForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+            const formData = new FormData(removeAdminForm);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/users/remove_admin', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    removeAdminResultDiv.innerText = `Success: ${data.detail}`;
+                    removeAdminResultDiv.style.backgroundColor = 'lightgreen';
+                    removeAdminResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    removeAdminResultDiv.innerText = `Error: ${errorData.detail}`;
+                    removeAdminResultDiv.style.backgroundColor = 'lightcoral';
+                    removeAdminResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                removeAdminResultDiv.innerText = 'An error occurred';
+                removeAdminResultDiv.style.backgroundColor = 'lightcoral';
+                removeAdminResultDiv.style.visibility = 'visible';
             }
         });
 

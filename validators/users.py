@@ -32,6 +32,11 @@ class LoginOrCreateOrUpdateUserRequest(BaseModel):
         }
 
 
+login_or_create_or_update_user_dependency = Annotated[
+    LoginOrCreateOrUpdateUserRequest, Form()
+]
+
+
 class MakeAdminRequest(BaseModel):
     email: EmailStr = Field(
         description="User email address",
@@ -61,6 +66,9 @@ class MakeAdminRequest(BaseModel):
                 "master_password": "MasterP@ssw0rd",
             }
         }
+
+
+make_or_remove_admin_dependency = Annotated[MakeAdminRequest, Form()]
 
 
 class UserProfileRequest(BaseModel):
@@ -124,6 +132,9 @@ class UserProfileRequest(BaseModel):
         }
 
 
+user_profile_dependency = Annotated[UserProfileRequest, Form()]
+
+
 class ChangePasswordRequest(BaseModel):
     current_password: SecretStr = Field(
         description="Current user password",
@@ -172,9 +183,4 @@ class ChangePasswordRequest(BaseModel):
         }
 
 
-login_or_create_or_update_user_dependency = Annotated[
-    LoginOrCreateOrUpdateUserRequest, Form()
-]
-make_admin_dependency = Annotated[MakeAdminRequest, Form()]
-user_profile_dependency = Annotated[UserProfileRequest, Form()]
 change_password_dependency = Annotated[ChangePasswordRequest, Form()]

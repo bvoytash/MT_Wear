@@ -71,7 +71,7 @@ csrf_dependency = Annotated[str, Depends(csrf_validator)]
 
 @router.post("/login")
 @limiter.limit("5/minute", per_method=True)
-async def login_for_access_token(
+async def login(
     request: Request,
     crsf_token: csrf_dependency,
     form_data: login_or_create_or_update_user_dependency,

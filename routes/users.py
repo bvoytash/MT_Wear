@@ -14,7 +14,7 @@ from security import (
 from models.users import User, UserProfile
 from validators.users import (
     login_or_create_or_update_user_dependency,
-    make_admin_dependency,
+    make_or_remove_admin_dependency,
     user_profile_dependency,
     change_password_dependency,
 )
@@ -76,11 +76,11 @@ async def delete_user(
 
 @router.post("/make_admin", status_code=status.HTTP_200_OK)
 @limiter.limit("15/minute", per_method=True)
-async def delete_user(
+async def make_admin(
     request: Request,
     db: db_dependency,
     crsf_token: csrf_dependency,
-    form_data: make_admin_dependency,
+    form_data: make_or_remove_admin_dependency,
 ):
     check_password(form_data.master_password.get_secret_value(), MASTER_PASSWORD_HASH)
     user = db.query(User).filter_by(email=form_data.email).first()
@@ -96,6 +96,31 @@ async def delete_user(
     db.commit()
     return JSONResponse(
         content={"detail": "User is now admin"}, status_code=status.HTTP_200_OK
+    )
+
+
+@router.post("/remove_admin", status_code=status.HTTP_200_OK)
+@limiter.limit("15/minute", per_method=True)
+async def remove_admin(
+    request: Request,
+    db: db_dependency,
+    crsf_token: csrf_dependency,
+    form_data: make_or_remove_admin_dependency,
+):
+    check_password(form_data.master_password.get_secret_value(), MASTER_PASSWORD_HASH)
+    user = db.query(User).filter_by(email=form_data.email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+    if not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="User is not an admin"
+        )
+    user.is_admin = False
+    db.commit()
+    return JSONResponse(
+        content={"detail": "User is not admin now"}, status_code=status.HTTP_200_OK
     )
 
 
@@ -123,7 +148,7 @@ async def update_profile(
 
 @router.get("/profile", status_code=status.HTTP_200_OK)
 @limiter.limit("50/minute", per_method=True)
-async def update_profile(
+async def read_profile(
     request: Request, user: auth_user_dependency, crsf_token: csrf_dependency
 ):
     return JSONResponse(
@@ -180,7 +205,7 @@ async def change_email(
 
 @router.post("/change_password")
 @limiter.limit("30/minute", per_method=True)
-async def change_email(
+async def change_password(
     request: Request,
     user: auth_user_dependency,
     db: db_dependency,
