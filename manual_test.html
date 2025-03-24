@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Test User Creation, Login, Deletion, Logout & Token generation</title>
+    <title>Test Interface</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -34,8 +34,7 @@
             margin-bottom: 10px;
         }
 
-        input[type="email"],
-        input[type="password"] {
+        input {
             width: 92%;
             height: 30px;
             margin-bottom: 20px;
@@ -126,6 +125,100 @@
             </form>
             <div class="result" id="csrfResult"></div>
         </div>
+
+        <!-- Make User an Admin Form -->
+        <div class="form-group">
+            <form id="adminForm">
+                <h2>Make User Admin</h2>
+                <label for="adminEmail">Email:</label>
+                <input type="email" id="adminEmail" name="email" required />
+
+                <label for="masterPassword">Master Password:</label>
+                <input type="password" id="masterPassword" name="master_password" required />
+
+                <button type="submit">Make Admin</button>
+            </form>
+            <div class="result" id="adminResult"></div>
+        </div>
+
+        <!-- Remove Admin Form -->
+        <div class="form-group">
+            <form id="removeAdminForm">
+                <h2>Remove Admin</h2>
+                <label for="removeAdminEmail">Email:</label>
+                <input type="email" id="removeAdminEmail" name="email" required />
+
+                <label for="masterPassword">Master Password:</label>
+                <input type="password" id="masterPassword" name="master_password" required />
+
+                <button type="submit">Remove Admin</button>
+            </form>
+            <div class="result" id="removeAdminResult"></div>
+        </div>
+
+        <!-- Update Profile Form -->
+        <div class="form-group">
+            <form id="profileForm">
+                <h2>Update Profile</h2>
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" />
+
+                <label for="city">City:</label>
+                <input type="text" id="city" name="city" />
+
+                <label for="postal_code">Postal Code:</label>
+                <input type="text" id="postal_code" name="postal_code" />
+
+                <label for="phone">Phone Number:</label>
+                <input type="tel" id="phone_number" name="phone_number" />
+
+                <button type="submit">Update Profile</button>
+            </form>
+            <div class="result" id="profileResult"></div>
+        </div>
+
+        <!-- Get Profile Info Form -->
+        <div class="form-group">
+            <form id="getProfileInfoForm">
+                <h2>Get Data</h2>
+                <button type="submit">Get Profile Info</button>
+            </form>
+            <div class="result" id="getProfileInfo"></div>
+        </div>
+
+        <div class="form-group">
+            <form id="emailForm">
+                <h2>Change Email</h2>
+
+                <label for="newEmail">New Email:</label>
+                <input type="email" id="email" name="email" required />
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required />
+
+                <button type="submit">Change Email</button>
+            </form>
+            <div class="result" id="emailResult"></div>
+        </div>
+
+        <!-- Change Password Form -->
+        <div class="form-group">
+            <form id="passwordForm">
+                <h2>Change Password</h2>
+
+                <label for="currentPassword">Current Password:</label>
+                <input type="password" id="currentPassword" name="current_password" required />
+
+                <label for="newPassword">New Password:</label>
+                <input type="password" id="newPassword" name="new_password" required />
+
+                <label for="confirmPassword">Confirm New Password:</label>
+                <input type="password" id="confirmPassword" name="re_password" required />
+
+                <button type="submit">Change Password</button>
+            </form>
+            <div class="result" id="passwordResult"></div>
+        </div>
     </div>
 
     <script>
@@ -199,7 +292,6 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    document.cookie = `csrf_token=${data.csrf_token}; path=/; max-age=1800; samesite=Strict`;
                     loginResultDiv.innerText = `Success: ${data.detail}`;
                     loginResultDiv.style.backgroundColor = 'lightgreen';
                     loginResultDiv.style.visibility = 'visible';
@@ -313,6 +405,223 @@
                 csrfResultDiv.style.visibility = 'visible';
             }
         });
+
+        // Make Admin
+        const adminForm = document.getElementById('adminForm');
+        const adminResultDiv = document.getElementById('adminResult');
+
+        adminForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+            const formData = new FormData(adminForm);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/users/make_admin', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    adminResultDiv.innerText = `Success: ${data.detail}`;
+                    adminResultDiv.style.backgroundColor = 'lightgreen';
+                    adminResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    adminResultDiv.innerText = `Error: ${errorData.detail}`;
+                    adminResultDiv.style.backgroundColor = 'lightcoral';
+                    adminResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                adminResultDiv.innerText = 'An error occurred';
+                adminResultDiv.style.backgroundColor = 'lightcoral';
+                adminResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Remove Admin
+        const removeAdminForm = document.getElementById('removeAdminForm');
+        const removeAdminResultDiv = document.getElementById('removeAdminResult');
+
+        removeAdminForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+            const formData = new FormData(removeAdminForm);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/users/remove_admin', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    removeAdminResultDiv.innerText = `Success: ${data.detail}`;
+                    removeAdminResultDiv.style.backgroundColor = 'lightgreen';
+                    removeAdminResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    removeAdminResultDiv.innerText = `Error: ${errorData.detail}`;
+                    removeAdminResultDiv.style.backgroundColor = 'lightcoral';
+                    removeAdminResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                removeAdminResultDiv.innerText = 'An error occurred';
+                removeAdminResultDiv.style.backgroundColor = 'lightcoral';
+                removeAdminResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Profile Update
+        const profileForm = document.getElementById('profileForm');
+        const profileResultDiv = document.getElementById('profileResult');
+
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+            const formData = new FormData(profileForm);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/users/profile', {
+                    method: 'PATCH',
+                    body: formData,
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    profileResultDiv.innerText = `Success: ${data.detail}`;
+                    profileResultDiv.style.backgroundColor = 'lightgreen';
+                    profileResultDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    profileResultDiv.innerText = `Error: ${errorData.detail}`;
+                    profileResultDiv.style.backgroundColor = 'lightcoral';
+                    profileResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                profileResultDiv.innerText = 'An error occurred';
+                profileResultDiv.style.backgroundColor = 'lightcoral';
+                profileResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Get Profile Info
+        const getProfileInfoForm = document.getElementById('getProfileInfoForm');
+        const getProfileInfoDiv = document.getElementById('getProfileInfo');
+
+        getProfileInfoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/users/profile`, {
+                    method: 'GET',
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    getProfileInfoDiv.innerText = `Success: \n${data.detail.email}\n${data.detail.is_admin}\n${data.detail.profile.address}\n${data.detail.profile.city}\n${data.detail.profile.postal_code}\n${data.detail.profile.phone_number}`;
+                    getProfileInfoDiv.style.backgroundColor = 'lightgreen';
+                    getProfileInfoDiv.style.visibility = 'visible';
+                } else {
+                    const errorData = await response.json();
+                    getProfileInfoDiv.innerText = `Error: ${errorData.detail}`;
+                    getProfileInfoDiv.style.backgroundColor = 'lightcoral';
+                    getProfileInfoDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                getProfileInfoDiv.innerText = 'An error occurred';
+                getProfileInfoDiv.style.backgroundColor = 'lightcoral';
+                getProfileInfoDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Change Email
+        const emailForm = document.getElementById('emailForm');
+        const emailResultDiv = document.getElementById('emailResult');
+
+        emailForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+            const formData = new FormData(emailForm);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/users/change_email', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    emailResultDiv.innerText = `Success: ${data.detail}`;
+                    emailResultDiv.style.backgroundColor = 'lightgreen';
+                    emailResultDiv.style.visibility = 'visible';
+
+                } else {
+                    const errorData = await response.json();
+                    emailResultDiv.innerText = `Error: ${errorData.detail}`;
+                    emailResultDiv.style.backgroundColor = 'lightcoral';
+                    emailResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                emailResultDiv.innerText = 'An error occurred';
+                emailResultDiv.style.backgroundColor = 'lightcoral';
+                emailResultDiv.style.visibility = 'visible';
+            }
+        });
+
+        // Change Password
+        const passwordForm = document.getElementById('passwordForm');
+        const passwordResultDiv = document.getElementById('passwordResult');
+
+        passwordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const csrfToken = getCookie('csrf_token');
+            const formData = new FormData(passwordForm);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/users/change_password', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRF-Token': csrfToken },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    passwordResultDiv.innerText = `Success: ${data.detail}`;
+                    passwordResultDiv.style.backgroundColor = 'lightgreen';
+                    passwordResultDiv.style.visibility = 'visible';
+
+                } else {
+                    const errorData = await response.json();
+                    passwordResultDiv.innerText = `Error: ${errorData.detail}`;
+                    passwordResultDiv.style.backgroundColor = 'lightcoral';
+                    passwordResultDiv.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                passwordResultDiv.innerText = 'An error occurred';
+                passwordResultDiv.style.backgroundColor = 'lightcoral';
+                passwordResultDiv.style.visibility = 'visible';
+            }
+        });
+
         fetch('http://127.0.0.1:8000/csrf_token', { method: 'GET', credentials: 'include' })
             .catch(error => console.error('Error:', error));
     </script>

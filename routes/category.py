@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 from models.category import Category
 from fastapi.responses import JSONResponse
 from database import db_dependency
 from validators.category import create_category_dependency, update_category_dependency, get_id_dependency
-from routes.auth import auth_user_dependency, csrf_dependency
+from routes.auth import auth_user_dependency, csrf_dependency, auth_admin_dependency
 from fastapi.encoders import jsonable_encoder
+from security import limiter
+from html import escape
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
 
@@ -15,6 +17,7 @@ async def create_category(
     create_category_request: create_category_dependency,
     db: db_dependency,
     crsf_token: csrf_dependency,
+    auth_admin_dependency: auth_admin_dependency,
     ):
     existing_category = db.query(Category).filter(Category.name == create_category_request.name).first()
 
@@ -24,7 +27,8 @@ async def create_category(
             detail=f"Category '{create_category_request.name}' already exists"
         )
     
-    new_category = Category(name=create_category_request.name)
+    sanitized_name=escape(create_category_request.name)
+    new_category = Category(name=sanitized_name)
     
     db.add(new_category)
     db.commit()
@@ -37,6 +41,7 @@ async def create_category(
 
 
 @router.get("/all", status_code=status.HTTP_200_OK)
+@limiter.limit("20/minute")
 async def get_all_categories(
     db: db_dependency = db_dependency,
     crsf_token: csrf_dependency = csrf_dependency,):
@@ -80,7 +85,8 @@ async def update_category(
     category_id: int,
     updated_data: update_category_dependency,
     db: db_dependency,
-    crsf_token: csrf_dependency,):
+    crsf_token: csrf_dependency,
+    auth_admin_dependency: auth_admin_dependency):
     category = db.query(Category).filter(Category.id == category_id).first()
     
     if not category:
@@ -89,7 +95,8 @@ async def update_category(
             detail=f"Category with ID {category_id} not found"
         )
     
-    category.name = updated_data.name
+    sanitized_name=escape(updated_data.name)
+    category.name = sanitized_name
     
     db.commit()
     
@@ -103,7 +110,8 @@ async def update_category(
 async def delete_category(
     category_id: int,
     db: db_dependency,
-    crsf_token: csrf_dependency,):
+    crsf_token: csrf_dependency,
+    auth_admin_dependency: auth_admin_dependency,):
     category = db.query(Category).filter(Category.id == category_id).first()
     
     if not category:

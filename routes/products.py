@@ -1,18 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from models.product import Product
 from models.category import Category
 from fastapi.responses import JSONResponse
 from database import db_dependency
 from fastapi.encoders import jsonable_encoder
-from validators.product import create_product_dependency, update_product_dependency,get_id_dependency, sorting_dependency, filtering_dependency, SortByEnum, OrderEnum, is_active_dependency
-from routes.auth import csrf_dependency
+from validators.product import create_product_dependency, update_product_dependency,get_id_dependency, sorting_dependency, filtering_dependency, OrderEnum, is_active_dependency
+from routes.auth import csrf_dependency, auth_admin_dependency
+from html import escape
+from security import limiter
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_product(create_product_request: create_product_dependency, db: db_dependency, 
-                         crsf_token: csrf_dependency,
+                         crsf_token: csrf_dependency, auth_admin_dependency: auth_admin_dependency, 
                          ):
     category = db.query(Category).filter(Category.name == create_product_request.category).first()
     
@@ -22,10 +24,16 @@ async def create_product(create_product_request: create_product_dependency, db: 
             detail=f"Category '{create_product_request.category}' not found"
         )
     
+    sanitized_name=escape(create_product_request.name)
+    sanitized_description=escape(create_product_request.description)
+    sanitized_price=escape(create_product_request.price)
+    sanitized_size=escape(create_product_request.size)
+    
     new_product = Product(
-        name=create_product_request.name,
-        description=create_product_request.description,
-        price=create_product_request.price,
+        name=sanitized_name,
+        description=sanitized_description,
+        price=sanitized_price,
+        size=sanitized_size,
         category_id=category.id,
         image_url=create_product_request.image_url,
         is_active=create_product_request.is_active,
@@ -40,6 +48,7 @@ async def create_product(create_product_request: create_product_dependency, db: 
     
 
 @router.get("/all", status_code=status.HTTP_200_OK)
+@limiter.limit("20/minute")
 async def get_all_products(skip: int = 0, limit: int = 10, db: db_dependency = db_dependency,
                            crsf_token: csrf_dependency=csrf_dependency,
                         ):
@@ -63,7 +72,7 @@ async def update_product(
     product_id: int,
     update_product_request: update_product_dependency,
     db: db_dependency,
-    crsf_token: csrf_dependency,
+    crsf_token: csrf_dependency, auth_admin_dependency: auth_admin_dependency,
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     
@@ -84,25 +93,30 @@ async def update_product(
     
 
     if update_product_request.name is not None:
-        product.name = update_product_request.name
+        sanitized_name = escape(update_product_request.name)
+        product.name = sanitized_name
     
     if update_product_request.description is not None:
-        product.description = update_product_request.description
+        sanitized_description = escape(update_product_request.description)
+        product.description = sanitized_description
     
     if update_product_request.price is not None:
-        product.price = update_product_request.price
+        sanitized_price = escape(update_product_request.price)
+        product.price = sanitized_price
     
     if update_product_request.image_url is not None:
-        product.image_url = update_product_request.image_url
+        sanitized_image_url = escape(update_product_request.image_url)
+        product.image_url = sanitized_image_url
     
     if update_product_request.is_active is not None:
-        product.is_active = update_product_request.is_active
+        sanitized_is_active = escape(update_product_request.is_active)
+        product.is_active = sanitized_is_active
     
     db.commit()
     
     return JSONResponse(
         content={
-            "message": "Product updated successfully",
+            "detail": "Product updated successfully",
             "product": {
                 "id": product.id,
                 "name": product.name,
@@ -119,8 +133,8 @@ async def update_product(
 
 @router.delete("/{product_id}", status_code=status.HTTP_200_OK)
 async def delete_product(product_id: int, db: db_dependency,
-                         crsf_token: csrf_dependency
-                         ,):
+                         crsf_token: csrf_dependency, auth_admin_dependency: auth_admin_dependency,
+                         ):
     product = db.query(Product).filter(Product.id == product_id).first()
     
     if not product:
@@ -137,6 +151,7 @@ async def delete_product(product_id: int, db: db_dependency,
     )
 
 @router.get("/sorted", status_code=status.HTTP_200_OK)
+@limiter.limit("20/minute")
 async def get_sorted_products(
     # skip: int = 0,
     # limit: int = 10,
@@ -159,6 +174,7 @@ async def get_sorted_products(
     )
 
 @router.get("/filtered", status_code=status.HTTP_200_OK)
+@limiter.limit("20/minute")
 async def get_filtered_products(
     filtering_dependency: filtering_dependency,
     db: db_dependency = db_dependency,
@@ -188,6 +204,7 @@ async def get_filtered_products(
     )
 
 @router.get("/{product_id}", status_code=status.HTTP_200_OK)
+@limiter.limit("20/minute")
 async def get_product_by_id(
     product_id: int,
     product_request: get_id_dependency,
@@ -215,6 +232,7 @@ async def update_is_active(
     is_active_dependency: is_active_dependency,
     db: db_dependency = db_dependency,
     crsf_token: csrf_dependency = csrf_dependency,
+    auth_admin_dependency: auth_admin_dependency = auth_admin_dependency, 
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
 
@@ -229,7 +247,7 @@ async def update_is_active(
 
     return JSONResponse(
         content={
-            "message": f"Product with ID {product_id} updated successfully",
+            "detail": f"Product with ID {product_id} updated successfully",
             "product": {
                 "id": product.id,
                 "name": product.name,

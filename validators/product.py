@@ -11,6 +11,7 @@ class CreateProductRequest(BaseModel):
     category: str = Field(min_length=1, max_length=50, example="T-Shirts")
     image_url: Optional[str] = Field(default=None, example="path/to/the/image/image.jpg")
     is_active: Optional[bool] = Field(default=True, example=True)
+    size: Optional[str] = Field(default=None, max_length=10, example="M")
 
     model_config = {
         "json_schema_extra": {
@@ -21,6 +22,7 @@ class CreateProductRequest(BaseModel):
                 "category": "T-Shirts",
                 "image_url": "path/to/the/image/image.jpg",
                 "is_active": True,
+                "size": "M",
             }
         }
     }
@@ -33,6 +35,7 @@ class UpdateProductRequest(BaseModel):
     category: Optional[str] = Field(min_length=1, max_length=50, example="Updated Category")
     image_url: Optional[str] = Field(default=None, example="path/to/updated/image.jpg")
     is_active: Optional[bool] = Field(default=True, example=False)
+    size: Optional[str] = Field(default=None, max_length=10, example="M")
 
     model_config = {
         "json_schema_extra": {
@@ -43,6 +46,7 @@ class UpdateProductRequest(BaseModel):
                 "category": "Updated Category",
                 "image_url": "path/to/updated/image.jpg",
                 "is_active": False,
+                "size": "M",
             }
         }
     }
