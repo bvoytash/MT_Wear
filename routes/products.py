@@ -116,7 +116,7 @@ async def update_product(
     
     return JSONResponse(
         content={
-            "message": "Product updated successfully",
+            "detail": "Product updated successfully",
             "product": {
                 "id": product.id,
                 "name": product.name,
@@ -247,7 +247,7 @@ async def update_is_active(
 
     return JSONResponse(
         content={
-            "message": f"Product with ID {product_id} updated successfully",
+            "detail": f"Product with ID {product_id} updated successfully",
             "product": {
                 "id": product.id,
                 "name": product.name,
