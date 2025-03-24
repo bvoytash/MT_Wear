@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from database import db_dependency
 from fastapi.encoders import jsonable_encoder
 from validators.product import create_product_dependency, update_product_dependency,get_id_dependency, sorting_dependency, filtering_dependency, OrderEnum, is_active_dependency
-from routes.auth import csrf_dependency, auth_user_dependency
+from routes.auth import csrf_dependency, auth_admin_dependency
 from html import escape
 from security import limiter
 
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/products", tags=["Products"])
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_product(create_product_request: create_product_dependency, db: db_dependency, 
-                         crsf_token: csrf_dependency, auth_user_dependency: auth_user_dependency, 
+                         crsf_token: csrf_dependency, auth_admin_dependency: auth_admin_dependency, 
                          ):
     category = db.query(Category).filter(Category.name == create_product_request.category).first()
     
@@ -72,7 +72,7 @@ async def update_product(
     product_id: int,
     update_product_request: update_product_dependency,
     db: db_dependency,
-    crsf_token: csrf_dependency, auth_user_dependency: auth_user_dependency,
+    crsf_token: csrf_dependency, auth_admin_dependency: auth_admin_dependency,
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     
@@ -133,7 +133,7 @@ async def update_product(
 
 @router.delete("/{product_id}", status_code=status.HTTP_200_OK)
 async def delete_product(product_id: int, db: db_dependency,
-                         crsf_token: csrf_dependency, auth_user_dependency: auth_user_dependency,
+                         crsf_token: csrf_dependency, auth_admin_dependency: auth_admin_dependency,
                          ):
     product = db.query(Product).filter(Product.id == product_id).first()
     
@@ -232,7 +232,7 @@ async def update_is_active(
     is_active_dependency: is_active_dependency,
     db: db_dependency = db_dependency,
     crsf_token: csrf_dependency = csrf_dependency,
-    auth_user_dependency: auth_user_dependency = auth_user_dependency, 
+    auth_admin_dependency: auth_admin_dependency = auth_admin_dependency, 
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
 
