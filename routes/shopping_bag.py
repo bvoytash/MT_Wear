@@ -2,12 +2,11 @@ from fastapi import APIRouter, HTTPException, status, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from database import db_dependency
-from models.shopping_bag import ShoppingBag, BagItem, Order, OrderStatus
+from models.shopping_bag import ShoppingBag, BagItem
 from models.users import UserProfile
 from routes.auth import auth_user_dependency
 from validators.shopping_bag import create_bag_item_dependency,update_bag_item_dependency, create_shopping_bag_dependency
 import json
-from datetime import datetime
 
 router = APIRouter(
     prefix="/shopping_bag",
@@ -144,23 +143,11 @@ async def checkout_shopping_bag(
 
     db.commit()
 
-    order_number = f"ORD-{new_shopping_bag.id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-
-    new_order = Order(
-        user_profile_id=user_profile_id,
-        shopping_bag_id=new_shopping_bag.id,
-        created=datetime.utcnow(),
-        order_number=order_number,
-        is_paid=False,
-        status=OrderStatus.PREPARING
-    )
-    
-    db.add(new_order)
-    db.commit()
-
     response.delete_cookie(COOKIE_NAME)
 
     return JSONResponse(
         content={"detail":"Shopping bag successfully checked out and linked to an order"},
         status_code=status.HTTP_201_CREATED
     )
+
+
