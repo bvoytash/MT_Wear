@@ -7,6 +7,8 @@ class CreateBagItemRequest(BaseModel):
     product_name: str = Field(..., min_length=1, max_length=255, example="Sample Product", description="Name of the product")
     quantity: int = Field(default=1, ge=1, example=2, description="Quantity of the product")
     price: float = Field(..., gt=0, example=19.99, description="Price of the product at the time of adding to the bag")
+    size: Optional[str] = Field(default=None, max_length=10, example="M", description="Size of the product (e.g., S, M, L). Optional field.")
+
 
     model_config = {
         "json_schema_extra": {
@@ -15,6 +17,7 @@ class CreateBagItemRequest(BaseModel):
                 "product_name": "Sample Product",
                 "quantity": 2,
                 "price": 19.99,
+                "size": "M"
             }
         }
     }
@@ -33,7 +36,6 @@ class UpdateBagItemRequest(BaseModel):
 
 
 class CreateShoppingBagRequest(BaseModel):
-    user_id: int = Field(..., example=1, description="ID of the user who owns this shopping bag")
     items: Optional[List[CreateBagItemRequest]] = Field(default=[], description="List of items to be added to the bag")
 
     model_config = {
@@ -46,12 +48,7 @@ class CreateShoppingBagRequest(BaseModel):
                         "product_name": "Sample Product",
                         "quantity": 2,
                         "price": 19.99,
-                    },
-                    {
-                        "product_id": 2,
-                        "product_name": "Another Product",
-                        "quantity": 1,
-                        "price": 9.99,
+                        "size": "M"
                     },
                 ],
             }
