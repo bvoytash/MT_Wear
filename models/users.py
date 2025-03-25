@@ -29,6 +29,7 @@ class UserProfile(Base):
     city = Column(String(50), nullable=True)
     postal_code = Column(String(20), nullable=True)
 
+    orders = relationship("Order", back_populates="user_profile")
     user = relationship("User", back_populates="profile", passive_deletes=True)
 
     def to_dict(self):

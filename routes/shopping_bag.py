@@ -2,9 +2,11 @@ from fastapi import APIRouter, HTTPException, status, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from database import db_dependency
-from models.shopping_bag import ShoppingBag, BagItem
+from models.shopping_bag import ShoppingBag, BagItem, Order
+from models.users import UserProfile
 from validators.shopping_bag import create_bag_item_dependency,update_bag_item_dependency, create_shopping_bag_dependency
 import json
+from datetime import datetime
 
 router = APIRouter(
     prefix="/shopping_bag",
@@ -96,3 +98,62 @@ async def get_shopping_bag_items(
         )
     except json.JSONDecodeError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid cookie data")
+    
+
+@router.post("/checkout", status_code=status.HTTP_201_CREATED)
+async def checkout_shopping_bag(
+    user_profile_id: int,
+    request: Request,
+    response: Response,
+    db: db_dependency,
+):
+
+    cookie_data = request.cookies.get(COOKIE_NAME)
+
+    if not cookie_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Shopping bag is empty")
+
+    try:
+        items = json.loads(cookie_data)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid cookie data")
+
+
+    user_profile = db.query(UserProfile).filter(UserProfile.id == user_profile_id).first()
+    
+    if not user_profile:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found")
+
+    new_shopping_bag = ShoppingBag()
+    db.add(new_shopping_bag)
+    db.commit()
+
+    for item in items:
+        new_item = BagItem(
+            bag_id=new_shopping_bag.id,
+            product_id=item["product_id"],
+            product_name=item["product_name"],
+            quantity=item["quantity"],
+            price=item["price"],
+            size=item.get("size"),
+            total_price=item["total_price"]
+        )
+        db.add(new_item)
+
+    db.commit()
+
+    new_order = Order(
+        user_profile_id=user_profile_id,
+        shopping_bag_id=new_shopping_bag.id,
+        created=datetime.utcnow()
+    )
+    
+    db.add(new_order)
+    db.commit()
+
+    response.delete_cookie(COOKIE_NAME)
+
+    return JSONResponse(
+        content={"detail":"Shopping bag successfully checked out and linked to an order"},
+        status_code=status.HTTP_201_CREATED
+    )

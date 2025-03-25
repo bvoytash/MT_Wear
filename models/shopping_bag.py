@@ -1,14 +1,15 @@
-from sqlalchemy import Column, Integer, ForeignKey, Float, String
+from sqlalchemy import Column, Integer, ForeignKey, Float, String, DateTime
 from database import Base
 from sqlalchemy.orm import relationship
+from datetime import datetime
 
 class ShoppingBag(Base):
     __tablename__ = "shopping_bags"
 
     id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=True)
     items = relationship("BagItem", back_populates="shopping_bag", cascade="all, delete-orphan")
-
-    #TODO foreign key with model Order
+    order = relationship("Order", back_populates="shopping_bag")
 
 
 class BagItem(Base):
@@ -27,3 +28,15 @@ class BagItem(Base):
 
     def __repr__(self):
         return f"<BagItem - (product_id={self.product_id}, quantity={self.quantity})>"
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_profile_id = Column(Integer, ForeignKey("user_profiles.id", ondelete="CASCADE"), nullable=False)
+    shopping_bag_id = Column(Integer, ForeignKey("shopping_bags.id", ondelete="CASCADE"), nullable=False)
+    created = Column(DateTime, default=datetime.utcnow)
+
+    user_profile = relationship("UserProfile", back_populates="orders")
+    shopping_bag = relationship("ShoppingBag", back_populates="order")
