@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, Float, String, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, Float, String, DateTime, Boolean
 from database import Base
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -37,6 +37,8 @@ class Order(Base):
     user_profile_id = Column(Integer, ForeignKey("user_profiles.id", ondelete="CASCADE"), nullable=False)
     shopping_bag_id = Column(Integer, ForeignKey("shopping_bags.id", ondelete="CASCADE"), nullable=False)
     created = Column(DateTime, default=datetime.utcnow)
+    is_paid = Column(Column(Boolean, default=False))
+    status = Column(String, nullable=False) #TODO validators enum => preparing, accepted, sent, canceled, rejected 
 
     user_profile = relationship("UserProfile", back_populates="orders")
     shopping_bag = relationship("ShoppingBag", back_populates="order")
