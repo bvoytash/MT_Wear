@@ -4,6 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from database import db_dependency
 from models.shopping_bag import ShoppingBag, BagItem, Order
 from models.users import UserProfile
+from routes.auth import auth_user_dependency
 from validators.shopping_bag import create_bag_item_dependency,update_bag_item_dependency, create_shopping_bag_dependency
 import json
 from datetime import datetime
@@ -106,6 +107,7 @@ async def checkout_shopping_bag(
     request: Request,
     response: Response,
     db: db_dependency,
+    auth_user_dependency: auth_user_dependency
 ):
 
     cookie_data = request.cookies.get(COOKIE_NAME)
