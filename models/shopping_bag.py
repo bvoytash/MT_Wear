@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, ForeignKey, Float, String, DateTime, Boo
 from database import Base
 from sqlalchemy.orm import relationship
 from datetime import datetime
+from enum import Enum
 
 class ShoppingBag(Base):
     __tablename__ = "shopping_bags"
@@ -30,6 +31,14 @@ class BagItem(Base):
         return f"<BagItem - (product_id={self.product_id}, quantity={self.quantity})>"
 
 
+
+class OrderStatus(Enum):
+    PREPARING = "preparing"
+    ACCEPTED = "accepted"
+    SENT = "sent"
+    CANCELED = "canceled"
+    REJECTED = "rejected"
+
 class Order(Base):
     __tablename__ = "orders"
 
@@ -37,8 +46,9 @@ class Order(Base):
     user_profile_id = Column(Integer, ForeignKey("user_profiles.id", ondelete="CASCADE"), nullable=False)
     shopping_bag_id = Column(Integer, ForeignKey("shopping_bags.id", ondelete="CASCADE"), nullable=False)
     created = Column(DateTime, default=datetime.utcnow)
+    order_number = Column(String, unique=True, nullable=False)
     is_paid = Column(Column(Boolean, default=False))
-    status = Column(String, nullable=False) #TODO validators enum => preparing, accepted, sent, canceled, rejected 
+    status = Column(Enum(OrderStatus), nullable=False)
 
     user_profile = relationship("UserProfile", back_populates="orders")
     shopping_bag = relationship("ShoppingBag", back_populates="order")
