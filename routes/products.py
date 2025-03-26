@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Request
 from models.product import Product
 from models.category import Category
 from fastapi.responses import JSONResponse
@@ -49,7 +49,7 @@ async def create_product(create_product_request: create_product_dependency, db: 
 
 @router.get("/all", status_code=status.HTTP_200_OK)
 @limiter.limit("20/minute")
-async def get_all_products(skip: int = 0, limit: int = 10, db: db_dependency = db_dependency,
+async def get_all_products(request: Request, skip: int = 0, limit: int = 10, db: db_dependency = db_dependency,
                            crsf_token: csrf_dependency=csrf_dependency,
                         ):
     products = db.query(Product).offset(skip).limit(limit).all()
@@ -153,6 +153,7 @@ async def delete_product(product_id: int, db: db_dependency,
 @router.get("/sorted", status_code=status.HTTP_200_OK)
 @limiter.limit("20/minute")
 async def get_sorted_products(
+    request: Request,
     # skip: int = 0,
     # limit: int = 10,
     db: db_dependency = db_dependency,
@@ -176,6 +177,7 @@ async def get_sorted_products(
 @router.get("/filtered", status_code=status.HTTP_200_OK)
 @limiter.limit("20/minute")
 async def get_filtered_products(
+    request: Request,
     filtering_dependency: filtering_dependency,
     db: db_dependency = db_dependency,
     crsf_token: csrf_dependency = csrf_dependency,
@@ -206,6 +208,7 @@ async def get_filtered_products(
 @router.get("/{product_id}", status_code=status.HTTP_200_OK)
 @limiter.limit("20/minute")
 async def get_product_by_id(
+    request: Request,
     product_id: int,
     product_request: get_id_dependency,
     db: db_dependency,
