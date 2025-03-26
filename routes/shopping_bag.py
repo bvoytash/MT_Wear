@@ -146,7 +146,7 @@ async def checkout_shopping_bag(
     response.delete_cookie(COOKIE_NAME)
 
     return JSONResponse(
-        content={"detail":"Shopping bag successfully checked out and linked to an order"},
+        content={"detail":"Shopping bag successfully checked out"},
         status_code=status.HTTP_201_CREATED
     )
 

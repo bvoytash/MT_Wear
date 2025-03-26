@@ -8,9 +8,10 @@ class ShoppingBag(Base):
     __tablename__ = "shopping_bags"
 
     id = Column(Integer, primary_key=True, index=True)
-    order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=True)
+    # order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=True)
     items = relationship("BagItem", back_populates="shopping_bag", cascade="all, delete-orphan")
-    order = relationship("Order", back_populates="shopping_bag")
+    # order = relationship("Order", back_populates="shopping_bag")
+
 
 
 class BagItem(Base):

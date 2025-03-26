@@ -20,7 +20,8 @@ class Order(Base):
     shopping_bag_id = Column(Integer, ForeignKey("shopping_bags.id", ondelete="CASCADE"), nullable=False)
     created = Column(DateTime, default=datetime.utcnow)
     order_number = Column(String, unique=True, nullable=False)
-    is_paid = Column(Column(Boolean, default=False))
+    is_paid = Column(Boolean, default=False)
+
     status = Column(Enum(OrderStatus), nullable=False)
 
     user_profile = relationship("UserProfile", back_populates="orders")
