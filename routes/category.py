@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from models.category import Category
 from fastapi.responses import JSONResponse
@@ -43,6 +43,7 @@ async def create_category(
 @router.get("/all", status_code=status.HTTP_200_OK)
 @limiter.limit("20/minute")
 async def get_all_categories(
+    request: Request,
     db: db_dependency = db_dependency,
     crsf_token: csrf_dependency = csrf_dependency,):
     categories = db.query(Category).all()
