@@ -24,10 +24,10 @@ async def create_product(create_product_request: create_product_dependency, db: 
             detail=f"Category '{create_product_request.category}' not found"
         )
     
-    sanitized_name=escape(create_product_request.name)
-    sanitized_description=escape(create_product_request.description)
+    sanitized_name=create_product_request.name
+    sanitized_description=create_product_request.description
     sanitized_price=create_product_request.price
-    sanitized_size=escape(create_product_request.size)
+    sanitized_size=create_product_request.size
     
     new_product = Product(
         name=sanitized_name,
@@ -93,24 +93,20 @@ async def update_product(
     
 
     if update_product_request.name is not None:
-        sanitized_name = escape(update_product_request.name)
-        product.name = sanitized_name
+        product.name = update_product_request.name
     
     if update_product_request.description is not None:
-        sanitized_description = escape(update_product_request.description)
-        product.description = sanitized_description
+        product.description = update_product_request.description
     
     if update_product_request.price is not None:
         sanitized_price = update_product_request.price
         product.price = sanitized_price
     
     if update_product_request.image_url is not None:
-        sanitized_image_url = escape(update_product_request.image_url)
-        product.image_url = sanitized_image_url
+        product.image_url = update_product_request.image_url
     
     if update_product_request.is_active is not None:
-        sanitized_is_active = escape(update_product_request.is_active)
-        product.is_active = sanitized_is_active
+        product.is_active = update_product_request.is_active
     
     db.commit()
     
