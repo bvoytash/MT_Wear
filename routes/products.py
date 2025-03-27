@@ -26,7 +26,7 @@ async def create_product(create_product_request: create_product_dependency, db: 
     
     sanitized_name=escape(create_product_request.name)
     sanitized_description=escape(create_product_request.description)
-    sanitized_price=escape(create_product_request.price)
+    sanitized_price=create_product_request.price
     sanitized_size=escape(create_product_request.size)
     
     new_product = Product(
@@ -101,7 +101,7 @@ async def update_product(
         product.description = sanitized_description
     
     if update_product_request.price is not None:
-        sanitized_price = escape(update_product_request.price)
+        sanitized_price = update_product_request.price
         product.price = sanitized_price
     
     if update_product_request.image_url is not None:
