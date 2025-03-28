@@ -30,38 +30,44 @@ class CreateProductRequest(BaseModel):
 
 
 class UpdateProductRequest(BaseModel):
-    name: str = Field(
+    name: Optional[str] = Field(
+        None,
         min_length=1,
         max_length=100,
         example="Updated Product Name",
         description="Name of the product"
     )
-    description: str = Field(
+    description: Optional[str] = Field(
+        None,
         max_length=500,
         example="Updated product description.",
         description="Description of the product"
     )
-    price: float = Field(
+    price: Optional[float] = Field(
+        None,
         gt=0,
         example=29.99,
         description="Price of the product (must be greater than 0)"
     )
-    category: str = Field(
+    category: Optional[str] = Field(
+        None,
         min_length=1,
         max_length=50,
         example="Updated Category",
         description="Category of the product"
     )
-    image_url: str = Field(
+    image_url: Optional[str] = Field(
+        None,
         example="path/to/updated/image.jpg",
         description="URL of the product image"
     )
-    is_active: bool = Field(
+    is_active: Optional[bool] = Field(
         default=True,
         example=False,
         description="Indicates whether the product is active"
     )
-    size: str = Field(
+    size: Optional[str] = Field(
+        None,
         max_length=10,
         example="M",
         description="Size of the product"
@@ -69,31 +75,31 @@ class UpdateProductRequest(BaseModel):
 
     @field_validator("name")
     def validate_name(cls, v):
-        if len(v) < 1 or len(v) > 100:
+        if v is not None and (len(v) < 1 or len(v) > 100):
             raise ValueError("Name must be between 1 and 100 characters long")
         return v
 
     @field_validator("description")
     def validate_description(cls, v):
-        if len(v) > 500:
+        if v is not None and len(v) > 500:
             raise ValueError("Description must not exceed 500 characters")
         return v
 
     @field_validator("price")
     def validate_price(cls, v):
-        if v <= 0:
+        if v is not None and v <= 0:
             raise ValueError("Price must be greater than 0")
         return v
 
     @field_validator("category")
     def validate_category(cls, v):
-        if len(v) < 1 or len(v) > 50:
+        if v is not None and (len(v) < 1 or len(v) > 50):
             raise ValueError("Category must be between 1 and 50 characters long")
         return v
 
     @field_validator("size")
     def validate_size(cls, v):
-        if len(v) > 10:
+        if v is not None and len(v) > 10:
             raise ValueError("Size must not exceed 10 characters")
         return v
 

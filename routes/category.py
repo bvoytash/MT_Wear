@@ -27,7 +27,7 @@ async def create_category(
             detail=f"Category '{create_category_request.name}' already exists"
         )
     
-    sanitized_name=create_category_request.name
+    sanitized_name=escape(create_category_request.name)
     new_category = Category(name=sanitized_name)
     
     db.add(new_category)
@@ -96,7 +96,7 @@ async def update_category(
             detail=f"Category with ID {category_id} not found"
         )
     
-    sanitized_name=updated_data.name
+    sanitized_name=escape(updated_data.name)
     category.name = sanitized_name
     
     db.commit()
