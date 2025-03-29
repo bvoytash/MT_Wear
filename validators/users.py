@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, SecretStr, EmailStr, validator
+from pydantic import BaseModel, Field, SecretStr, EmailStr, validator, field_validator
 from typing import Annotated, Optional
 from fastapi import Form
 from re import fullmatch
@@ -14,13 +14,13 @@ class LoginOrCreateOrUpdateUserRequest(BaseModel):
         example="SecureP@ssw0rd",
     )
 
-    @validator("email")
+    @field_validator("email")
     def validate_email(cls, v):
         if len(v) < 3 or len(v) > 64:
             raise ValueError("Email must be between 3 and 64 characters long")
         return v
 
-    @validator("password")
+    @field_validator("password")
     def validate_password(cls, v):
         if len(v.get_secret_value()) < 3 or len(v.get_secret_value()) > 64:
             raise ValueError("Password must be between 3 and 64 characters long")
@@ -47,13 +47,13 @@ class MakeAdminRequest(BaseModel):
         example="MasterP@ssw0rd",
     )
 
-    @validator("email")
+    @field_validator("email")
     def validate_email(cls, v):
         if len(v) < 3 or len(v) > 64:
             raise ValueError("Email must be between 3 and 64 characters long")
         return v
 
-    @validator("master_password")
+    @field_validator("master_password")
     def validate_master_password(cls, v):
         if len(v.get_secret_value()) < 3 or len(v.get_secret_value()) > 64:
             raise ValueError("Master password must be between 3 and 64 characters long")
@@ -89,7 +89,7 @@ class UserProfileRequest(BaseModel):
         example="10001",
     )
 
-    @validator("phone_number")
+    @field_validator("phone_number")
     def validate_phone_number(cls, v):
         if v:
             if len(v) < 3 or len(v) > 20:
@@ -98,21 +98,21 @@ class UserProfileRequest(BaseModel):
                 raise ValueError("Invalid phone number format")
         return v
 
-    @validator("address")
+    @field_validator("address")
     def validate_address(cls, v):
         if v:
             if len(v) < 1 or len(v) > 200:
                 raise ValueError("Address must be 1-200 characters")
         return v
 
-    @validator("city")
+    @field_validator("city")
     def validate_city(cls, v):
         if v:
             if len(v) < 1 or len(v) > 50:
                 raise ValueError("City must be 1-50 characters")
         return v
 
-    @validator("postal_code")
+    @field_validator("postal_code")
     def validate_postal_code(cls, v):
         if v:
             if len(v) < 2 or len(v) > 20:
@@ -149,7 +149,7 @@ class ChangePasswordRequest(BaseModel):
         example="NewSecureP@ssw0rd",
     )
 
-    @validator("current_password")
+    @field_validator("current_password")
     def validate_current_password(cls, v):
         if len(v.get_secret_value()) < 3 or len(v.get_secret_value()) > 64:
             raise ValueError(
@@ -157,13 +157,13 @@ class ChangePasswordRequest(BaseModel):
             )
         return v
 
-    @validator("new_password")
+    @field_validator("new_password")
     def validate_new_password(cls, v):
         if len(v.get_secret_value()) < 3 or len(v.get_secret_value()) > 64:
             raise ValueError("New password must be between 3 and 64 characters long")
         return v
 
-    @validator("re_password")
+    @field_validator("re_password")
     def validate_re_password(cls, v, values):
         if v is None or values.get("new_password") is None:
             raise ValueError("You must use a valid password and confirm it")
