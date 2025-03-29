@@ -4,10 +4,11 @@ from fastapi.encoders import jsonable_encoder
 from database import db_dependency
 from models.shopping_bag import ShoppingBag, BagItem
 from models.users import UserProfile
-from routes.auth import auth_user_dependency
+from routes.auth import auth_user_dependency, csrf_dependency
 from validators.shopping_bag import create_bag_item_dependency,update_bag_item_dependency, create_shopping_bag_dependency
 import json
 from os import getenv
+
 
 router = APIRouter(
     prefix="/shopping_bag",
@@ -19,9 +20,10 @@ COOKIE_NAME = "guest_shopping_bag"
 
 @router.post("/add_item", status_code=201)
 async def add_item_to_bag(
+    crsf_token: csrf_dependency,
     request: Request,
-    request_dependency: create_bag_item_dependency,
     response: Response,
+    request_dependency: create_bag_item_dependency,
 ):
     
     cookie_data = request.cookies.get(COOKIE_NAME)
@@ -68,6 +70,7 @@ async def add_item_to_bag(
 @router.get("/items", status_code=status.HTTP_200_OK)
 async def get_shopping_bag_items(
     request: Request,
+    crsf_token: csrf_dependency,
 ):
 
     cookie_data = request.cookies.get(COOKIE_NAME)
