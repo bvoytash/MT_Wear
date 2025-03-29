@@ -26,7 +26,7 @@ async def create_product(create_product_request: create_product_dependency, db: 
     
     sanitized_name=escape(create_product_request.name)
     sanitized_description=escape(create_product_request.description)
-    sanitized_price=escape(create_product_request.price)
+    sanitized_price=create_product_request.price
     sanitized_size=escape(create_product_request.size)
     
     new_product = Product(
@@ -93,24 +93,22 @@ async def update_product(
     
 
     if update_product_request.name is not None:
-        sanitized_name = escape(update_product_request.name)
+        sanitized_name=escape(update_product_request.name)
         product.name = sanitized_name
     
     if update_product_request.description is not None:
-        sanitized_description = escape(update_product_request.description)
+        sanitized_description=escape(update_product_request.description)
         product.description = sanitized_description
     
     if update_product_request.price is not None:
-        sanitized_price = escape(update_product_request.price)
-        product.price = sanitized_price
+        product.price = update_product_request.price
     
     if update_product_request.image_url is not None:
-        sanitized_image_url = escape(update_product_request.image_url)
+        sanitized_image_url=escape(update_product_request.image_url)
         product.image_url = sanitized_image_url
     
     if update_product_request.is_active is not None:
-        sanitized_is_active = escape(update_product_request.is_active)
-        product.is_active = sanitized_is_active
+        product.is_active = update_product_request.is_active
     
     db.commit()
     
@@ -217,11 +215,19 @@ async def get_product_by_id(
 
     product = db.query(Product).filter(Product.id == product_request.product_id).first()
     
+    
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found"
         )
+    
+    category = db.query(Category).filter(Category.id == product.category_id).first()
+    print(category.name)
+    if category:
+        product.category_name = category.name
+    else:
+        product.category_name = "Category not found"
     
     serialized_product = jsonable_encoder(product)
     return JSONResponse(
