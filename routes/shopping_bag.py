@@ -77,7 +77,6 @@ async def get_shopping_bag_items(
 
     try:
         items = json.loads(cookie_data)
-        print(items)
         return JSONResponse(
             content={"items": items},
             status_code=status.HTTP_200_OK
