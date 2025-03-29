@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, SecretStr, EmailStr, validator, field_validator
+from pydantic import BaseModel, Field, SecretStr, EmailStr, field_validator
 from typing import Annotated, Optional
 from fastapi import Form
 from re import fullmatch
