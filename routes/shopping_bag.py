@@ -86,7 +86,7 @@ async def get_shopping_bag_items(
 
 @router.post("/items/remove", status_code=status.HTTP_200_OK)
 async def remove_bag_item(
-    # crsf_token: csrf_dependency,
+    crsf_token: csrf_dependency,
     request: Request,
     response: Response,
     request_body: dict
