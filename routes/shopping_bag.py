@@ -4,10 +4,12 @@ from fastapi.encoders import jsonable_encoder
 from database import db_dependency
 from models.shopping_bag import BagItem
 from models.users import UserProfile
+from models.orders import Order, OrderStatus
 from routes.auth import auth_user_dependency, csrf_dependency
 from validators.shopping_bag import create_bag_item_dependency,update_bag_item_dependency
 import json
 from os import getenv
+from datetime import datetime, timezone
 
 
 router = APIRouter(
@@ -134,5 +136,40 @@ async def remove_bag_item(
 
     return JSONResponse
 
-    
+
+
+@router.get("/checkout", status_code=status.HTTP_200_OK)
+async def preview_nad_checkout(
+    crsf_token: csrf_dependency,
+    request: Request,
+    auth_user: auth_user_dependency,
+):
+    cookie_data = request.cookies.get(COOKIE_NAME)
+    if not cookie_data:
+        return {"items": []}
+
+    try:
+        items = json.loads(cookie_data)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid cookie data")
+
+    user_profile = auth_user.profile.to_dict()
+
+    checkout_preview = {
+        "user_profile": user_profile,
+        "items": [
+            {
+                "product_name": item['product_name'],
+                "size": item.get('size', 'No size'),
+                "price": item['price'],
+                "quantity": item['quantity'],
+                "total_price": item['price'] * item['quantity']
+            }
+            for item in items
+        ],
+        "total_price": sum(item['price'] * item['quantity'] for item in items)
+    }
+
+    return JSONResponse(content=checkout_preview, status_code=status.HTTP_200_OK)
+
 
