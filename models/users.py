@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
+from models.orders import Order
 
 
 class User(Base):
@@ -28,6 +29,8 @@ class UserProfile(Base):
     address = Column(String(200), nullable=True)
     city = Column(String(50), nullable=True)
     postal_code = Column(String(20), nullable=True)
+
+    orders = relationship("Order", back_populates="user_profile", passive_deletes=True)
 
     user = relationship("User", back_populates="profile", passive_deletes=True)
 
