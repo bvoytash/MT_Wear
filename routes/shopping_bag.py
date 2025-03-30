@@ -5,7 +5,7 @@ from database import db_dependency
 from models.shopping_bag import ShoppingBag, BagItem
 from models.users import UserProfile
 from routes.auth import auth_user_dependency, csrf_dependency
-from validators.shopping_bag import create_bag_item_dependency,update_bag_item_dependency, create_shopping_bag_dependency
+from validators.shopping_bag import create_bag_item_dependency,update_bag_item_dependency
 import json
 from os import getenv
 

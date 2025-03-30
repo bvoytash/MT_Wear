@@ -17,26 +17,17 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_profile_id = Column(Integer, ForeignKey("user_profiles.id", ondelete="CASCADE"), nullable=False)
-    shopping_bag_id = Column(Integer, ForeignKey("shopping_bags.id", ondelete="CASCADE"), nullable=False)
-    created = Column(DateTime, default=datetime.utcnow)
-    order_number = Column(String, unique=True, nullable=False)
-    is_paid = Column(Boolean, default=False)
 
+    created = Column(DateTime, default=datetime.now(datetime.timezone.utc))
+    order_number = Column(String, unique=True, nullable=True)
+
+    is_paid = Column(Boolean, default=False)
     status = Column(Enum(OrderStatus), nullable=False)
 
     user_profile = relationship("UserProfile", back_populates="orders")
-    shopping_bag = relationship("ShoppingBag", back_populates="order")
+    bag_items = relationship("BagItem", back_populates="order", cascade="all, delete-orphan")
 
 
-    # order_number = f"ORD-{new_shopping_bag.id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-    #     new_order = Order(
-    #     user_profile_id=user_profile_id,
-    #     shopping_bag_id=new_shopping_bag.id,
-    #     created=datetime.utcnow(),
-    #     order_number=order_number,
-    #     is_paid=False,
-    #     status=OrderStatus.PREPARING
-    # )
-    
-    # db.add(new_order)
-    # db.commit()
+    def generate_order_number(self):
+        date_part = self.created.strftime("%Y%m%d")  # Format: YYYYMMDD
+        self.order_number = f"ORD-{date_part}-{self.id}"

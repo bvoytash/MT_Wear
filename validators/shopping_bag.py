@@ -35,28 +35,5 @@ class UpdateBagItemRequest(BaseModel):
 
 
 
-class CreateShoppingBagRequest(BaseModel):
-    items: Optional[List[CreateBagItemRequest]] = Field(default=[], description="List of items to be added to the bag")
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "user_id": 1,
-                "items": [
-                    {
-                        "product_id": 1,
-                        "product_name": "Sample Product",
-                        "quantity": 2,
-                        "price": 19.99,
-                        "size": "M"
-                    },
-                ],
-            }
-        }
-    }
-
-
-
 create_bag_item_dependency = Annotated[CreateBagItemRequest, Form()]
 update_bag_item_dependency = Annotated[UpdateBagItemRequest, Form()]
-create_shopping_bag_dependency = Annotated[CreateShoppingBagRequest, Form()]
