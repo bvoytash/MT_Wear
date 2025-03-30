@@ -3,6 +3,7 @@ from database import Base
 from sqlalchemy.orm import relationship
 from datetime import timezone, datetime
 from enum import Enum
+from models.shopping_bag import BagItem
 
 
 class OrderStatus(Enum):
