@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, status, Request
-from sqlalchemy.orm import Session
 from models.category import Category
 from fastapi.responses import JSONResponse
 from database import db_dependency

@@ -1,15 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Response, Request
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from database import db_dependency
-from models.shopping_bag import BagItem
-from models.users import UserProfile
-from models.orders import Order, OrderStatus
 from routes.auth import auth_user_dependency, csrf_dependency
-from validators.shopping_bag import create_bag_item_dependency,update_bag_item_dependency
+from validators.shopping_bag import create_bag_item_dependency
 import json
 from os import getenv
-from datetime import datetime, timezone
 
 
 router = APIRouter(
