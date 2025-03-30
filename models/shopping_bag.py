@@ -3,6 +3,7 @@ from database import Base
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from enum import Enum
+from models.orders import Order
 
 # class ShoppingBag(Base):
 #     __tablename__ = "shopping_bags"
