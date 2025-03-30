@@ -1,18 +1,6 @@
-from sqlalchemy import Column, Integer, ForeignKey, Float, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, ForeignKey, Float, String
 from database import Base
 from sqlalchemy.orm import relationship
-from datetime import datetime
-from enum import Enum
-from models.orders import Order
-
-# class ShoppingBag(Base):
-#     __tablename__ = "shopping_bags"
-
-#     id = Column(Integer, primary_key=True, index=True)
-    # order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=True)
-    # items = relationship("BagItem", back_populates="shopping_bag", cascade="all, delete-orphan")
-    # order = relationship("Order", back_populates="shopping_bag")
-
 
 
 class BagItem(Base):
