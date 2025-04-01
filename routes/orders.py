@@ -67,7 +67,12 @@ async def create_order(
     
     db.commit()
 
-    return JSONResponse( {"message": "Order created successfully", "order_number": new_order.order_number} )
+    response = JSONResponse(
+        {"message": "Order created successfully", "order_number": new_order.order_number}
+    )
+    response.delete_cookie(COOKIE_NAME)
+
+    return response
 
 
 
