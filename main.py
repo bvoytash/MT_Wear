@@ -4,7 +4,7 @@ from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from routes import users, auth, products, category, shopping_bag
+from routes import users, auth, products, category, shopping_bag, orders
 from database import Base, engine
 
 # Don't forget to import the models
@@ -19,6 +19,7 @@ Base.metadata.create_all(bind=engine)
 app.include_router(products.router)
 app.include_router(category.router)
 app.include_router(shopping_bag.router)
+app.include_router(orders.router)
 
 app.include_router(users.router)
 app.include_router(auth.router)

@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from datetime import timezone, datetime
 from enum import Enum
 from models.shopping_bag import BagItem
+from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class OrderStatus(Enum):
@@ -28,6 +29,12 @@ class Order(Base):
 
     user_profile = relationship("UserProfile", back_populates="orders")
     bag_items = relationship("BagItem", back_populates="order", cascade="all, delete-orphan")
+
+
+
+    @hybrid_property
+    def total_price(self):
+        return sum(item.total_price for item in self.bag_items)
 
 
     def generate_order_number(self):
