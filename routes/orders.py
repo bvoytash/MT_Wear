@@ -47,7 +47,10 @@ async def get_order_by_user_id (
         }
         for order in orders
     ]
-     return {"orders": orders_response}
+    
+     return JSONResponse(
+        content={"orders": orders_response},
+        status_code=status.HTTP_200_OK)
 
 
 
@@ -109,7 +112,7 @@ async def create_order(
     db.commit()
 
     response = JSONResponse(
-        {"message": "Order created successfully", "order_number": new_order.order_number}
+        {"detail": "Order created successfully", "order_number": new_order.order_number}
     )
     response.delete_cookie(COOKIE_NAME)
 
@@ -140,4 +143,46 @@ async def get_all_orders(db: db_dependency,
         for order in orders
     ]
 
-    return {"orders": orders_response}
+    return JSONResponse(
+        content={"orders": orders_response},
+        status_code=status.HTTP_200_OK)
+
+
+
+@router.patch("/update_status/{order_id}", status_code=status.HTTP_200_OK)
+async def update_order_status(
+    order_id: int,
+    request: Request,
+    db: db_dependency,
+    auth_admin_dependency
+):
+    
+    body = await request.json()
+    new_status = body.get("status")
+
+    if new_status not in [status.value for status in OrderStatus]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid order status."
+        )
+
+    order = db.query(Order).filter_by(id=order_id).first()
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found."
+        )
+
+    order.status = OrderStatus(new_status)
+    db.commit()
+
+    return JSONResponse(
+        content={
+            "detail": "Order status updated successfully.",
+            "order": {
+                "order_id": order.id,
+                "new_status": order.status.value
+            },
+        },
+        status_code=status.HTTP_200_OK
+    )
