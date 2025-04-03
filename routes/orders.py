@@ -123,7 +123,7 @@ async def create_order(
 
 @router.get("/all_orders", status_code=status.HTTP_200_OK)
 async def get_all_orders(db: db_dependency,
-                         auth_admin_dependency,
+                         auth_admin_dependency: auth_admin_dependency,
                          ):
     orders = db.query(Order).all()
     if not orders:
@@ -154,7 +154,7 @@ async def update_order_status(
     order_id: int,
     request: Request,
     db: db_dependency,
-    auth_admin_dependency
+    auth_admin_dependency: auth_admin_dependency,
 ):
     
     body = await request.json()
