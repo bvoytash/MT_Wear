@@ -14,48 +14,6 @@ COOKIE_NAME = "guest_shopping_bag"
 
 
 
-@router.get("/{user_id}", status_code=status.HTTP_200_OK)
-async def get_order_by_user_id (
-    user_id: int, db: db_dependency,
-    auth_user_dependency: auth_user_dependency,
-    ):
-
-     user_profile = db.query(UserProfile).filter_by(user_id=user_id).first()
-
-     if not user_profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User profile not found."
-        )
-     
-     orders = db.query(Order).filter_by(user_profile_id=user_profile.id).all()
-
-     if not orders:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No orders found for this user."
-        )
-        
-     orders_response = [
-        {
-            "id": order.id,
-            "order_number": order.order_number,
-            "created": order.created,
-            "is_paid": order.is_paid,
-            "status": order.status.value,
-            "total_price": order.total_price,
-        }
-        for order in orders
-    ]
-    
-     return JSONResponse(
-        content={"orders": orders_response},
-        status_code=status.HTTP_200_OK)
-
-
-
-
-
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_order(
     request: Request,
@@ -122,9 +80,7 @@ async def create_order(
 
 
 @router.get("/all_orders", status_code=status.HTTP_200_OK)
-async def get_all_orders(db: db_dependency,
-                         auth_admin_dependency: auth_admin_dependency,
-                         ):
+async def get_all_orders(db: db_dependency):
     orders = db.query(Order).all()
     if not orders:
         raise HTTPException(
@@ -143,46 +99,87 @@ async def get_all_orders(db: db_dependency,
         for order in orders
     ]
 
-    return JSONResponse(
-        content={"orders": orders_response},
-        status_code=status.HTTP_200_OK)
+    return {"orders": orders_response}
+
+    # return JSONResponse(
+    #     content={"orders": orders_response},
+    #     status_code=status.HTTP_200_OK)
 
 
 
-@router.patch("/update_status/{order_id}", status_code=status.HTTP_200_OK)
-async def update_order_status(
-    order_id: int,
-    request: Request,
-    db: db_dependency,
-    auth_admin_dependency: auth_admin_dependency,
-):
-    
-    body = await request.json()
-    new_status = body.get("status")
+@router.get("/{user_id}", status_code=status.HTTP_200_OK)
+async def get_order_by_user_id (
+    user_id: int, db: db_dependency,
+    auth_user_dependency: auth_user_dependency,
+    ):
 
-    if new_status not in [status.value for status in OrderStatus]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid order status."
-        )
+     user_profile = db.query(UserProfile).filter_by(user_id=user_id).first()
 
-    order = db.query(Order).filter_by(id=order_id).first()
-    if not order:
+     if not user_profile:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Order not found."
+            detail="User profile not found."
         )
+     
+     orders = db.query(Order).filter_by(user_profile_id=user_profile.id).all()
 
-    order.status = OrderStatus(new_status)
-    db.commit()
+     if not orders:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No orders found for this user."
+        )
+        
+     orders_response = [
+        {
+            "id": order.id,
+            "order_number": order.order_number,
+            "created": order.created,
+            "is_paid": order.is_paid,
+            "status": order.status.value,
+            "total_price": order.total_price,
+        }
+        for order in orders
+    ]
+    
+     return {"orders": orders_response}
 
-    return JSONResponse(
-        content={
-            "detail": "Order status updated successfully.",
-            "order": {
-                "order_id": order.id,
-                "new_status": order.status.value
-            },
-        },
-        status_code=status.HTTP_200_OK
-    )
+
+
+
+# @router.patch("/update_status/{order_id}", status_code=status.HTTP_200_OK)
+# async def update_order_status(
+#     order_id: int,
+#     request: Request,
+#     db: db_dependency,
+#     auth_admin_dependency: auth_admin_dependency,
+# ):
+    
+#     body = await request.json()
+#     new_status = body.get("status")
+
+#     if new_status not in [status.value for status in OrderStatus]:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="Invalid order status."
+#         )
+
+#     order = db.query(Order).filter_by(id=order_id).first()
+#     if not order:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="Order not found."
+#         )
+
+#     order.status = OrderStatus(new_status)
+#     db.commit()
+
+#     return JSONResponse(
+#         content={
+#             "detail": "Order status updated successfully.",
+#             "order": {
+#                 "order_id": order.id,
+#                 "new_status": order.status.value
+#             },
+#         },
+#         status_code=status.HTTP_200_OK
+#     )
